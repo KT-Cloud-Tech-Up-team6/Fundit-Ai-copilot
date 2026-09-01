@@ -40,12 +40,27 @@
 - 실제 API 모델 ID가 다르면 `.env` 의 `GEMINI_MODEL` 만 바꾸면 됨 (코드 수정 불필요)
 - SDK: `google-genai` (신형), 구조화 출력(response_schema=pydantic) 사용 — `orchestrator/llm.py`
 
+## 검증 계획 (2026-09-01 사용자 제공 — 팀 공동 검증 계획서에서 발췌)
+
+- O파트 담당 지표: V1 오드롭률 ≤3%·드롭 정확도 ≥95% / V4 라벨 Macro-F1 ≥90%,
+  FAQ top-1 ≥90%, Exact Match ≥85% / **V5 할루시네이션 0건(절대 기준)** /
+  V6 NO_GROUNDED_INFO 탐지율 ≥95% / V9 평균 지연 <1.5초 / V10 1,000건 비용 산정
+- `eval/run_eval.py` 가 위 지표를 전부 계산해 목표 대비 PASS/FAIL 표 +
+  `eval/results/report_*.json` 을 남기도록 구현됨. 목표치는 파일 상단 `TARGETS`.
+- V8(유사 질문 정규화·병합)과 미답변 질문 큐 집계는 현서 담당과 공동 — 미착수
+- 향후 목 댓글 250건 세트로 확장 + 3종 모델 비교(750 호출) 예정 (13-2 프로토콜)
+- **API 비용은 GCP 무료 크레딧으로 진행하기로 함** — API 키 발급 시 GCP 프로젝트에
+  연결하거나, Vertex 경로(`GOOGLE_GENAI_USE_VERTEXAI=1`) 사용. `.env.example` 참고
+
 ## 현재 상태 (2026-09-01 기준)
 
 - [x] 전체 구조 + O파트 구현 + FastAPI + 평가 스크립트 완성, 초기 커밋됨 (15830d5)
 - [x] 오프라인 스모크 통과: `python -m eval.smoke_offline` (KB 38건, 슬롯 치환, 인터페이스)
+  (Windows 콘솔에서 한글 깨지면 `PYTHONIOENCODING=utf-8` 로 실행)
+- [x] 평가 스크립트를 검증 계획 지표(V1·V4·V5·V6·V9·V10)에 맞게 재작성,
+      `orchestrator/llm.py` 에 토큰 사용량 집계 + Vertex AI 인증 경로 추가
 - [ ] **실제 Gemini 호출 평가 미실행** — `.env` 에 GEMINI_API_KEY 넣고
-      `python -m eval.run_eval` 돌려서 섹션별 정확도 확인이 다음 작업
+      `python -m eval.run_eval` 돌려서 지표 확인이 다음 작업
 - [ ] 평가 결과 보고 `orchestrator/router.py` 의 PROMPT_TEMPLATE 튜닝
 - [ ] **git 원격 없음** — 팀 공유 리포 만들면 remote 추가 후 push 할 것
       (사용자 규칙: 코드 수정 후 항상 commit + push)
