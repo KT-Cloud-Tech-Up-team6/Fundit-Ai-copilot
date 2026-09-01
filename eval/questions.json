@@ -1,0 +1,42 @@
+{
+  "answerable": [
+    {"text": "방송 몇 시까지 해요?", "category": "BROADCAST_INFO", "faq_id": "faq_bc_001"},
+    {"text": "다시 보여주나요?", "category": "BROADCAST_INFO", "faq_id": "faq_bc_002"},
+    {"text": "펀딩 언제 끝나요?", "category": "FUNDING_PROCESS", "faq_id": "faq_fp_001"},
+    {"text": "지금 몇 퍼센트 달성했어요?", "category": "FUNDING_PROCESS", "faq_id": "faq_fp_002"},
+    {"text": "목표 못 채우면 어떻게 돼요?", "category": "FUNDING_PROCESS", "faq_id": "faq_fp_003"},
+    {"text": "지금 바로 돈 나가요?", "category": "PAYMENT", "faq_id": "faq_pay_001"},
+    {"text": "계좌이체도 되나요?", "category": "PAYMENT", "faq_id": "faq_pay_002"},
+    {"text": "펀딩 끝나고 얼마 뒤에 와요?", "category": "DELIVERY_POLICY", "faq_id": "faq_dl_001"},
+    {"text": "제주도 배송비 추가돼요?", "category": "DELIVERY_POLICY", "faq_id": "faq_dl_002"},
+    {"text": "중간에 취소돼요?", "category": "REFUND_CANCEL", "faq_id": "faq_rf_001"},
+    {"text": "반품하면 배송비 내야 해요?", "category": "REFUND_CANCEL", "faq_id": "faq_rf_004"},
+    {"text": "옵션 나중에 바꿀 수 있어요?", "category": "REWARD_OPTION", "faq_id": "faq_rw_001"},
+    {"text": "얼리버드 아직 남았어요?", "category": "REWARD_OPTION", "faq_id": "faq_rw_002"},
+    {"text": "앱 없어도 살 수 있어요?", "category": "ACCOUNT_APP", "faq_id": "faq_ac_001"},
+    {"text": "알림 어디서 신청해요?", "category": "ACCOUNT_APP", "faq_id": "faq_ac_003"},
+    {"text": "쿠폰 어디에 넣어요?", "category": "EVENT_COUPON", "faq_id": "faq_ev_001"}
+  ],
+  "colloquial": [
+    {"text": "몇시까지함?", "category": "BROADCAST_INFO"},
+    {"text": "다시보기됨?", "category": "BROADCAST_INFO"},
+    {"text": "며칠남았어요", "category": "FUNDING_PROCESS"},
+    {"text": "지금사면 언제옴", "category": "DELIVERY_POLICY"},
+    {"text": "취소됨?", "category": "REFUND_CANCEL"},
+    {"text": "얼리버드 아직임?", "category": "REWARD_OPTION"}
+  ],
+  "unanswerable": [
+    {"text": "AS 센터 어디에 있어요?"},
+    {"text": "이거 중국 직배송인가요?"},
+    {"text": "리뷰 이벤트 있나요?"},
+    {"text": "다음 펀딩은 언제 해요?"},
+    {"text": "선물 포장 되나요?"}
+  ],
+  "ignored": [
+    {"text": "안녕하세요~", "reason": "SMALLTALK"},
+    {"text": "디자인 예쁘네요ㅋㅋ", "reason": "NOT_QUESTION"},
+    {"text": "잘 보고 있습니다", "reason": "SMALLTALK"},
+    {"text": "제 주문번호 확인해주세요", "reason": "PERSONAL_INQUIRY"},
+    {"text": "지난번에 산 거 취소해주세요", "reason": "PERSONAL_INQUIRY"}
+  ]
+}
