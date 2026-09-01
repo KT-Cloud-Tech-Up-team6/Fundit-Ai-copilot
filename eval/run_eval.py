@@ -37,6 +37,9 @@ from shared.schemas import Comment, Decision, LiveContext
 
 LIVE_ID = "9401"
 
+# 무료 등급은 분당 15회 제한 → 기본 4.1초 간격. 유료 전환 시 env 로 줄이면 됨.
+EVAL_SLEEP_SEC = float(os.getenv("EVAL_SLEEP_SEC", "4.1"))
+
 # 검증 계획 목표치. (지표 키, 표시명, 목표, 방향)  방향 ">=" 이상 / "<=" 이하
 TARGETS = [
     ("drop_accuracy",      "V1 드롭 정확도",             0.95, ">="),
@@ -98,17 +101,16 @@ def collect(svc: CopilotService) -> list[dict]:
                 "gold_faq_id": q.get("faq_id"),
                 "gold_reason": q.get("reason"),
             }
-            t0 = time.perf_counter()
             try:
-                a = svc.process(LIVE_ID, Comment(text=q["text"]))
+                a, latency = _process_with_retry(svc, q["text"])
             except Exception as e:  # API 오류도 오답으로 기록하고 계속 진행
-                rec.update(error=str(e), latency_sec=time.perf_counter() - t0)
+                rec.update(error=str(e))
                 records.append(rec)
                 print(f"  [!] {q['text']!r} -> ERROR {e}")
                 time.sleep(1.0)
                 continue
             rec.update(
-                latency_sec=round(time.perf_counter() - t0, 3),
+                latency_sec=round(latency, 3),
                 pred_decision=a.decision.value,
                 pred_part=a.part_id,
                 pred_label=a.label,
@@ -121,8 +123,22 @@ def collect(svc: CopilotService) -> list[dict]:
             print(f"  [{mark}] {q['text']!r:40s} -> {a.decision.value}"
                   f" {a.label or ''} {a.faq_id or ''}"
                   f" {rec['pred_reason'] or ''} ({rec['latency_sec']:.2f}s)")
-            time.sleep(0.2)  # rate limit 완화
+            time.sleep(EVAL_SLEEP_SEC)
     return records
+
+
+def _process_with_retry(svc: CopilotService, text: str, retries: int = 3):
+    """429(무료 등급 분당 한도)는 잠시 기다렸다 재시도. 지연 측정은 성공한 시도만 반영."""
+    for attempt in range(retries):
+        t0 = time.perf_counter()
+        try:
+            return svc.process(LIVE_ID, Comment(text=text)), time.perf_counter() - t0
+        except Exception as e:
+            if attempt < retries - 1 and ("RESOURCE_EXHAUSTED" in str(e) or "429" in str(e)):
+                print(f"    (rate limit — 30초 대기 후 재시도 {attempt + 1}/{retries - 1})")
+                time.sleep(30)
+                continue
+            raise
 
 
 def _exact_match(r: dict) -> bool:

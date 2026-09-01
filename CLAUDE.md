@@ -47,10 +47,13 @@
   V6 NO_GROUNDED_INFO 탐지율 ≥95% / V9 평균 지연 <1.5초 / V10 1,000건 비용 산정
 - `eval/run_eval.py` 가 위 지표를 전부 계산해 목표 대비 PASS/FAIL 표 +
   `eval/results/report_*.json` 을 남기도록 구현됨. 목표치는 파일 상단 `TARGETS`.
-- V8(유사 질문 정규화·병합)과 미답변 질문 큐 집계는 현서 담당과 공동 — 미착수
-- 향후 목 댓글 250건 세트로 확장 + 3종 모델 비교(750 호출) 예정 (13-2 프로토콜)
-- **API 비용은 GCP 무료 크레딧으로 진행하기로 함** — API 키 발급 시 GCP 프로젝트에
-  연결하거나, Vertex 경로(`GOOGLE_GENAI_USE_VERTEXAI=1`) 사용. `.env.example` 참고
+- **3종 모델 비교는 하지 않기로 함** (2026-09-01 사용자 결정) — Flash-Lite 단일로 진행
+- **V8(유사 질문 정규화·병합)·미답변 질문 큐는 우리도 필요한 만큼 구현하기로 함**
+  (2026-09-01 사용자 결정) — 다음 구현 대상, 미착수
+- 향후 목 댓글 250건 세트로 확장 예정 (현재 32건)
+- **API 비용은 GCP 무료 크레딧으로 진행하기로 함** — 키는 `.env` 에 입력됨.
+  현재 무료 등급(분당 15회 제한)이라 run_eval 은 4.1초 간격 + 429 재시도로 동작.
+  유료 전환 시 `EVAL_SLEEP_SEC` 로 간격 축소 가능
 
 ## 현재 상태 (2026-09-01 기준)
 
@@ -59,8 +62,13 @@
   (Windows 콘솔에서 한글 깨지면 `PYTHONIOENCODING=utf-8` 로 실행)
 - [x] 평가 스크립트를 검증 계획 지표(V1·V4·V5·V6·V9·V10)에 맞게 재작성,
       `orchestrator/llm.py` 에 토큰 사용량 집계 + Vertex AI 인증 경로 추가
-- [ ] **실제 Gemini 호출 평가 미실행** — `.env` 에 GEMINI_API_KEY 넣고
-      `python -m eval.run_eval` 돌려서 지표 확인이 다음 작업
+- [x] **실제 Gemini 평가 실행 완료 + 프롬프트 튜닝 2회 → 전 지표 PASS (32/32)**
+      튜닝 내용: ① SMALLTALK(인사·응원) vs NOT_QUESTION(감상·리액션) 구분 명시
+      ② "방송(라이브) ≠ 펀딩(프로젝트)" 대상 구분 규칙 — "다음 펀딩 언제?"가
+      다음 방송 FAQ(faq_bc_004)로 오매칭되던 것 차단. 둘 다 router.py PROMPT_TEMPLATE
+      결과: Macro-F1 100 / FAQ top-1 100 / EM 100 / 할루시네이션 0 / NO_GROUNDED_INFO 100
+      / 평균 지연 0.95s / 32건당 입력 62K·출력 2K tok (eval/results/report_20260901_104134.json)
+- [ ] 다음: V8 유사 질문 정규화·병합 + 미답변 질문 큐 구현, 250건 세트 확장
 - [ ] 평가 결과 보고 `orchestrator/router.py` 의 PROMPT_TEMPLATE 튜닝
 - [ ] **git 원격 없음** — 팀 공유 리포 만들면 remote 추가 후 push 할 것
       (사용자 규칙: 코드 수정 후 항상 commit + push)

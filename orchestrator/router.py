@@ -28,13 +28,19 @@ PROMPT_TEMPLATE = """당신은 라이브 펀딩 방송의 실시간 채팅 상�
 시청자 댓글 1건을 아래 규칙에 따라 분류하세요. 답변 문장을 만들지 말고 분류만 하세요.
 
 ## 결정 규칙 (순서대로 적용)
-1. 인사·감상·리액션 등 질문이 아닌 댓글 → decision=IGNORE, ignored_reason=SMALLTALK 또는 NOT_QUESTION
+1. 질문이 아닌 댓글 → decision=IGNORE
+   - 인사·입장·응원·감사·잡담 ("안녕하세요", "잘 보고 있어요") → ignored_reason=SMALLTALK
+   - 감상·리액션·감탄 등 질문이 아닌 진술 ("디자인 예쁘네요ㅋㅋ") → ignored_reason=NOT_QUESTION
 2. 특정 개인의 주문·계정·결제 내역을 확인해야 하는 문의 → decision=IGNORE, ignored_reason=PERSONAL_INQUIRY
 3. 아래 파트 중 하나가 담당하는 질문 → decision=ANSWER, 해당 part_id 지정
    - FAQ 색인이 있는 파트는 의미가 가장 가까운 faq_id 와 label 까지 지정
    - 오타·축약·구어체("몇시까지함?" 등)도 의미가 같으면 같은 FAQ 로 매칭
+   - 단, 질문의 '대상'까지 같아야 매칭이다. 표현이 비슷해도 묻는 대상이 다르면 매칭 금지
+   - '방송(라이브)'과 '펀딩(프로젝트)'은 서로 다른 대상이다.
+     "다음 방송 언제?"는 방송 일정 FAQ 지만, "다음 펀딩 언제?"는 향후 새 프로젝트를
+     묻는 것이라 FAQ 에 근거가 없다 → UNANSWERABLE
 4. 질문이지만 어떤 파트의 근거로도 답할 수 없는 것 → decision=UNANSWERABLE
-   (없는 정보를 추측해 faq_id 를 지정하면 절대 안 됨)
+   (없는 정보를 추측해 faq_id 를 지정하면 절대 안 됨. 근거가 불확실하면 UNANSWERABLE 이 정답)
 
 ## 등록된 파트
 {parts_section}
