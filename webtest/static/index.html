@@ -275,11 +275,12 @@ function mountVideo(){
     $('stage').insertAdjacentHTML('afterbegin', `<video src="${esc(videoUrl)}" autoplay muted playsinline></video>`);
     videoEl = $('stage').querySelector('video');
     videoEl.addEventListener('loadedmetadata', () => { videoEl.currentTime = elapsedSec(); });
-    // 라이브 흉내: 3초 이상 어긋나면 현재 방송 시점으로 강제 동기화
+    // 라이브 흉내: 버퍼링과 싸우지 않게, 재생 안정 상태에서 10초 이상 밀렸을 때만 보정
     setInterval(() => {
-      if (videoEl && Math.abs(videoEl.currentTime - elapsedSec()) > 3)
+      if (videoEl && !videoEl.seeking && videoEl.readyState >= 3
+          && Math.abs(videoEl.currentTime - elapsedSec()) > 10)
         videoEl.currentTime = elapsedSec();
-    }, 4000);
+    }, 8000);
     const un = document.createElement('button');
     un.textContent = '🔊 소리 켜기'; un.style.cssText='position:absolute;bottom:14px;right:14px';
     un.onclick = () => { videoEl.muted = false; un.remove(); };
