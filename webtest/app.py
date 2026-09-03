@@ -25,7 +25,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from fastapi import FastAPI, Header, HTTPException, UploadFile
-from fastapi.responses import FileResponse, HTMLResponse, Response
+from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse
 from pydantic import BaseModel
 
 from orchestrator.service import CopilotService
@@ -244,15 +244,24 @@ def media(name: str, range: str | None = Header(default=None)):
     media_type = _MEDIA_TYPES.get(path.suffix.lower(), "application/octet-stream")
     size = path.stat().st_size
 
+    def _iter(start: int, end: int, chunk: int = 1024 * 1024):
+        with path.open("rb") as f:
+            f.seek(start)
+            remaining = end - start + 1
+            while remaining > 0:
+                data = f.read(min(chunk, remaining))
+                if not data:
+                    break
+                remaining -= len(data)
+                yield data
+
     if range and range.startswith("bytes="):
         start_s, _, end_s = range[6:].partition("-")
         start = int(start_s or 0)
-        end = min(int(end_s) if end_s else start + 4 * 1024 * 1024 - 1, size - 1)
-        with path.open("rb") as f:
-            f.seek(start)
-            data = f.read(end - start + 1)
-        return Response(data, status_code=206, media_type=media_type, headers={
+        end = min(int(end_s), size - 1) if end_s else size - 1  # 개방형 범위는 끝까지 스트리밍
+        return StreamingResponse(_iter(start, end), status_code=206, media_type=media_type, headers={
             "Content-Range": f"bytes {start}-{end}/{size}",
+            "Content-Length": str(end - start + 1),
             "Accept-Ranges": "bytes",
         })
     return FileResponse(path, media_type=media_type, headers={"Accept-Ranges": "bytes"})
