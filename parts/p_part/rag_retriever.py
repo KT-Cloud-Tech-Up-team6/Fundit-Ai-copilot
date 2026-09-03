@@ -2,7 +2,8 @@ import re
 from pathlib import Path
 
 
-MD_FILE = Path("product_5454434.md")
+# 통합 재배치: KB 는 parts/p_part/data/ 에 위치 (경로만 수정, 로직 무변경)
+MD_FILE = Path(__file__).parent / "data" / "product_5454434.md"
 
 
 # =========================================================

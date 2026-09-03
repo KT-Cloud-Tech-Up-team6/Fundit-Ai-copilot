@@ -5,7 +5,7 @@ from google import genai
 from google.genai import types
 from pydantic import BaseModel
 
-from rag_retriever import retrieve
+from parts.p_part.rag_retriever import retrieve
 
 
 # =========================================================
