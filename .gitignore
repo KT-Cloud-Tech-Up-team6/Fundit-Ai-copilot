@@ -6,3 +6,6 @@ venv/
 eval/results/
 webtest/uploads/
 *.log
+*.mp4
+*.mov
+*.webm
