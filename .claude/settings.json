@@ -16,7 +16,9 @@
       "Bash(PYTHONIOENCODING=utf-8 python -m webtest.report http://127.0.0.1:8000 team-only)",
       "Bash(git mv *)",
       "Bash(PYTHONIOENCODING=utf-8 python -m eval.o_part.smoke_offline)",
-      "Bash(git commit -q -m 'refactor\\(o-part\\): 평가 스크립트를 eval/o_part/ 로 재배치 — 파트별 평가 폴더 양식 통일 *)"
+      "Bash(git commit -q -m 'refactor\\(o-part\\): 평가 스크립트를 eval/o_part/ 로 재배치 — 파트별 평가 폴더 양식 통일 *)",
+      "Bash(git commit -q -m 'feat\\(webtest\\): 라이브 목방송 테스트 환경 — 완전 분리 폴더 *)",
+      "Bash(git commit *)"
     ]
   }
 }
