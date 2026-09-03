@@ -274,13 +274,12 @@ function mountVideo(){
   } else {
     $('stage').insertAdjacentHTML('afterbegin', `<video src="${esc(videoUrl)}" autoplay muted playsinline></video>`);
     videoEl = $('stage').querySelector('video');
-    videoEl.addEventListener('loadedmetadata', () => { videoEl.currentTime = elapsedSec(); });
-    // 라이브 흉내: 버퍼링과 싸우지 않게, 재생 안정 상태에서 10초 이상 밀렸을 때만 보정
-    setInterval(() => {
-      if (videoEl && !videoEl.seeking && videoEl.readyState >= 3
-          && Math.abs(videoEl.currentTime - elapsedSec()) > 10)
-        videoEl.currentTime = elapsedSec();
-    }, 8000);
+    // 늦게 입장한 경우에만 방송 시점으로 1회 이동. 이후엔 시킹 없이 자연 재생
+    // (주기적 강제 동기화는 재생을 끊는 원인이라 제거)
+    videoEl.addEventListener('loadedmetadata', () => {
+      const el = elapsedSec();
+      if (el > 5) videoEl.currentTime = el;
+    });
     const un = document.createElement('button');
     un.textContent = '🔊 소리 켜기'; un.style.cssText='position:absolute;bottom:14px;right:14px';
     un.onclick = () => { videoEl.muted = false; un.remove(); };
