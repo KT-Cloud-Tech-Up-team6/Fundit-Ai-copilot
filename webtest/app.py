@@ -142,11 +142,9 @@ def chat(body: ChatBody):
     store.append(result)
 
     # ANSWER → 채팅으로 답변 / UNANSWERABLE → 판매자 알림 (채팅 폴백 없음) / IGNORE → 침묵
+    # P파트 PARTIAL_GROUNDED 는 확인된 부분만 채팅으로 답하고, 미해결 부분은 알림으로도 보냄
     if ans is not None and ans.decision == Decision.UNANSWERABLE:
-        store.append({
-            "type": "alert", "ts": time.time(),
-            "nick": body.nickname[:20], "text": text,
-        })
+        store.append(_make_alert(body.nickname, text, ans))
     elif ans is not None and ans.answer_text:
         store.append({
             "type": "bot", "text": ans.answer_text, "ts": time.time(),
@@ -154,12 +152,53 @@ def chat(body: ChatBody):
             "decision": ans.decision.value, "label": ans.label,
             "faq_id": ans.faq_id, "latency_ms": latency_ms,
         })
+        if ans.meta.get("grounding") == "PARTIAL_GROUNDED":
+            store.append(_make_alert(body.nickname, text, ans, partial=True))
 
     return {
         "ok": error is None,
         "decision": ans.decision.value if ans else None,
         "error": error,
     }
+
+
+_interest_tracker = None
+
+
+def _tracker():
+    """P파트 관심사 집계기 (심현서 interest_tracker) — 세션 단위 파일 저장."""
+    global _interest_tracker
+    if _interest_tracker is None:
+        from parts.p_part.interest_tracker import InterestTracker
+        UPLOAD_DIR.mkdir(exist_ok=True)
+        _interest_tracker = InterestTracker(path=str(UPLOAD_DIR / "unanswered_interest.json"))
+    return _interest_tracker
+
+
+def _make_alert(nick: str, text: str, ans, partial: bool = False) -> dict:
+    """판매자 알림 레코드. P파트 미답변은 관심 유형 분석(현서 analyzer)까지 붙인다."""
+    rec = {"type": "alert", "ts": time.time(), "nick": nick[:20], "text": text}
+    if partial:
+        rec["partial"] = True
+    if ans.part_id == "p_part":
+        try:
+            from parts.p_part.interest_tracker import CATEGORY_NAMES, TOPIC_NAMES
+            from parts.p_part.unanswered_analyzer import analyze_unanswered
+            analysis = analyze_unanswered(
+                question=text,
+                grounding_status=ans.meta.get("grounding", "NO_GROUNDED_INFO"),
+                rag_answer=ans.answer_text or "",
+            )
+            if analysis.topics:
+                _tracker().add_topics(topics=analysis.topics, original_question=text)
+                rec["topics"] = [
+                    {"category": CATEGORY_NAMES.get(t.category, t.category),
+                     "topic": TOPIC_NAMES.get(t.topic_key, t.topic_key)}
+                    for t in analysis.topics
+                ]
+        except Exception as e:
+            rec["analyzer_error"] = str(e)[:150]
+    return rec
 
 
 @app.get("/api/state")
@@ -195,6 +234,10 @@ def start(body: PwBody):
 def reset(body: PwBody):
     _auth(body.password)
     store.reset()
+    try:
+        _tracker().reset()  # 관심사 집계도 세션과 함께 초기화
+    except Exception:
+        pass
     return {"ok": True}
 
 

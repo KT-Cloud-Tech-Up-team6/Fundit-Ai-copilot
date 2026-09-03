@@ -47,10 +47,13 @@ def main() -> None:
         assert "{" not in ans.answer_text, f"미치환 슬롯: {ans.answer_text}"
         print(f"[O] {fid}: {ans.answer_text}")
 
-    p_ans = PPart().handle(Comment(text="흡입력 얼마예요?"), RouteMatch(
-        decision=Decision.ANSWER, part_id="p_part"), ctx)
-    assert p_ans.decision == Decision.UNANSWERABLE and p_ans.meta.get("stub")
-    print("[P] stub OK ->", p_ans.meta)
+    pm = PPart().manifest()
+    assert pm.part_id == "p_part" and pm.labels, "P파트 manifest 이상"
+    # P파트 retrieval 은 규칙 기반이라 LLM 없이 검증 가능
+    from parts.p_part.rag_retriever import retrieve
+    chunk_ids = [c["chunk_id"] for c in retrieve("흡입력 몇이에요?", top_k=3)]
+    assert "kb_p_005" in chunk_ids, f"P retrieval 이상: {chunk_ids}"
+    print(f"[P] manifest 라벨 {len(pm.labels)}개, retrieval OK -> {chunk_ids}")
 
     print("\nSMOKE OK — 구조·KB·슬롯 치환 정상")
 

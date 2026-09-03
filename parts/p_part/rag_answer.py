@@ -1,27 +1,19 @@
 import json
 from typing import Literal
 
-from google import genai
 from google.genai import types
 from pydantic import BaseModel
 
+from orchestrator import llm
 from parts.p_part.rag_retriever import retrieve
 
 
 # =========================================================
-# Vertex AI 설정
+# 모델 설정 — 통합 시 변경: 인증·모델 선택을 공용 llm 모듈로 통일
+# (env 로 API 키/Vertex 선택 — Grounding 판정 로직·프롬프트 무변경)
 # =========================================================
 
-PROJECT_ID = "live-copliot"
-LOCATION = "global"
-MODEL_ID = "gemini-3.5-flash-lite"
-
-
-client = genai.Client(
-    vertexai=True,
-    project=PROJECT_ID,
-    location=LOCATION
-)
+MODEL_ID = llm.DEFAULT_MODEL
 
 
 # =========================================================
@@ -320,7 +312,7 @@ NO_GROUNDED_INFO:
     # 4. Gemini 호출
     # -----------------------------------------
 
-    response = client.models.generate_content(
+    response = llm.client().models.generate_content(
         model=MODEL_ID,
         contents=prompt,
 

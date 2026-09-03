@@ -1,100 +1,79 @@
-# LiveFunding Copilot — 세션 컨텍스트 (2026-09-01 대화 기록)
+# LiveFunding Copilot — 세션 컨텍스트
 
-> 이 파일은 Claude Code가 이 폴더를 열 때 자동 로드된다.
-> 이전 세션(프로젝트 최초 생성)에서 결정된 내용의 기록이므로 지우지 말 것.
+> Claude Code 가 이 폴더를 열 때 자동 로드된다. 이전 세션 결정 기록이므로 지우지 말 것.
 
-## 프로젝트가 뭔지
+## 프로젝트
 
-라이브 펀딩 AI 플랫폼의 **챗봇 상담 코파일럿**. 시청자 채팅 댓글을 받아
-플랫폼·펀딩 질문에 자동 응대하는 PoC.
+라이브 커머스/펀딩 방송의 **챗봇 상담 코파일럿**. 시청자 채팅을 분류해
+O파트(플랫폼·펀딩 FAQ)와 P파트(상품 RAG)가 답하고, 근거 없는 질문은
+판매자 알림으로 보낸다. 목데이터: 로보락 F25 (project 8812, live 9401, 달성률 142%).
 
-- 목데이터: 로보락 F25 ACE 가상 펀딩 (project_id 8812, live_id 9401, 달성률 142%)
-- 스펙 원본: 사용자가 준 "코파일럿 O파트 목데이터" 문서 (FAQ 38건, 동적 슬롯 8개,
-  섹션 9 PoC 질문 세트) → 전부 `parts/o_part/data/`, `eval/questions.json` 에 반영됨
+## 담당·브랜치 설계 (2026-09-03 통합 완료)
 
-## 담당 분리 (중요 — 협업 전제)
+- **원격**: `origin = github.com/KT-Cloud-Tech-Up-team6/live-commerce-copilot-mvp1` (팀 리포)
+- **main**: 통합 브랜치 (O+P+webtest 병합 완료, 어댑터·인증 통일 포함)
+- **feat/o-part**: 박금별 — O파트 + 공용 구조(shared/orchestrator/api) + eval/o_part
+- **feat/p-part**: 심현서 — P파트 RAG (재배치만, **로직 무변경 원칙**) + eval/p_part
+- **feat/webtest**: 라이브 목방송 테스트 환경 (완전 분리 폴더)
+- **로컬 push 미실행** — GitHub 인증 안 됨 (`gh auth login` 필요). push 전까지 로컬 전용
 
-- **사용자(박금별)는 O파트만 담당**: 플랫폼·펀딩 FAQ 응대 (이 저장소에서 구현 완료)
-- **P파트(상품 상담) + 55만건 상담데이터 학습은 다른 팀원 담당** → `parts/p_part/` 는
-  스텁 + 구현 가이드만 있음. 그 팀원이 자기 브랜치에서 작업 후 머지하는 지점
-- 그래서 구조가 **파트 플러그인식 모노레포**:
-  - `shared/` — 파트 간 계약 (schemas.py + CopilotPart 추상 클래스). **변경 시 팀 합의 필요**
-  - `orchestrator/` — 공용. 등록된 파트들의 manifest()로 분류 프롬프트를 자동 구성하는 라우터
-  - `parts/o_part/`, `parts/p_part/` — 각 파트 완전 독립 (자기 데이터·로직 포함)
-  - 파트 등록은 `api/main.py` 의 `CopilotService(parts=[OPart(), PPart()])` 한 줄
+## 폴더 양식 (통일됨)
 
-## 핵심 아키텍처 결정 (환각 차단)
-
-1. **LLM(Gemini Flash-Lite)은 분류만 한다** — 댓글 → `ANSWER(part_id+faq_id) /
-   IGNORE(SMALLTALK·NOT_QUESTION·PERSONAL_INQUIRY) / UNANSWERABLE`
-2. **답변 본문은 LLM이 생성하지 않는다** — KB `answer_text` + 동적 슬롯 치환만.
-   `strict: true` 항목(결제·배송·환불 약관 문구)은 원문 그대로 나감
-3. 모델이 없는 faq_id/part_id 를 뱉으면 UNANSWERABLE 로 강등 (router.py `_validate`)
-4. 비-strict 답변의 채팅 톤 리라이트는 `O_PART_REPHRASE=1` 옵션. 리라이트 결과의
-   숫자 멀티셋이 원문과 다르면 원문으로 되돌림 (part.py `_safe_rephrase`)
-5. 동적 슬롯은 기본값(`data/slots.json`) 위에 `PUT /lives/{live_id}/context` 값을 덮어씀
-
-## 모델
-
-- 사용자가 지정: **Gemini 3.5 Flash-Lite** → env `GEMINI_MODEL` 기본값 `gemini-3.5-flash-lite`
-- 실제 API 모델 ID가 다르면 `.env` 의 `GEMINI_MODEL` 만 바꾸면 됨 (코드 수정 불필요)
-- SDK: `google-genai` (신형), 구조화 출력(response_schema=pydantic) 사용 — `orchestrator/llm.py`
-
-## 검증 계획 (2026-09-01 사용자 제공 — 팀 공동 검증 계획서에서 발췌)
-
-- O파트 담당 지표: V1 오드롭률 ≤3%·드롭 정확도 ≥95% / V4 라벨 Macro-F1 ≥90%,
-  FAQ top-1 ≥90%, Exact Match ≥85% / **V5 할루시네이션 0건(절대 기준)** /
-  V6 NO_GROUNDED_INFO 탐지율 ≥95% / V9 평균 지연 <1.5초 / V10 1,000건 비용 산정
-- `eval/run_eval.py` 가 위 지표를 전부 계산해 목표 대비 PASS/FAIL 표 +
-  `eval/results/report_*.json` 을 남기도록 구현됨. 목표치는 파일 상단 `TARGETS`.
-- **3종 모델 비교는 하지 않기로 함** (2026-09-01 사용자 결정) — Flash-Lite 단일로 진행
-- **V8(유사 질문 정규화·병합)·미답변 질문 큐는 우리도 필요한 만큼 구현하기로 함**
-  (2026-09-01 사용자 결정) — 다음 구현 대상, 미착수
-- 향후 목 댓글 250건 세트로 확장 예정 (현재 32건)
-- **API 비용은 GCP 무료 크레딧으로 진행하기로 함** — 키는 `.env` 에 입력됨.
-  현재 무료 등급(분당 15회 제한)이라 run_eval 은 4.1초 간격 + 429 재시도로 동작.
-  유료 전환 시 `EVAL_SLEEP_SEC` 로 간격 축소 가능
-
-## 현재 상태 (2026-09-01 기준)
-
-- [x] 전체 구조 + O파트 구현 + FastAPI + 평가 스크립트 완성, 초기 커밋됨 (15830d5)
-- [x] 오프라인 스모크 통과: `python -m eval.smoke_offline` (KB 38건, 슬롯 치환, 인터페이스)
-  (Windows 콘솔에서 한글 깨지면 `PYTHONIOENCODING=utf-8` 로 실행)
-- [x] 평가 스크립트를 검증 계획 지표(V1·V4·V5·V6·V9·V10)에 맞게 재작성,
-      `orchestrator/llm.py` 에 토큰 사용량 집계 + Vertex AI 인증 경로 추가
-- [x] 32건 예비 세트로 튜닝 2회 → 32/32 (report_20260901_104134.json)
-- [x] **질문 세트 164건으로 확장** (FAQ 38건 전부 × 2 새 표현 + 구어체 30 +
-      함정 unanswerable 28 + ignored 30) — V8 등 상담원성 기능은 안 하기로 함
-      (2026-09-01 사용자 결정, 문서화 우선)
-- [x] **164건 평가 2회 완주 + 튜닝**: V6 78.6%→100% (주제 같다고 인접 FAQ 매칭 금지
-      규칙), 부작용으로 V1 드롭 93.3% (개인 트러블 신고 2건이 UNANSWERABLE로 이탈)
-      → PERSONAL_INQUIRY 정의 정밀화(4회차 튜닝)까지 적용됨
-- [x] **평가 리포트 작성: `docs/EVAL_REPORT.md`** — 지표·오분류 분석·실제 답변
-      예시·튜닝 이력·비용(댓글당 입력 ≈2,120 tok) 전부 실측 수치로 기록
-- [x] **라이브 목방송 테스트 환경 `webtest/` 구축 (2026-09-03)** — 화이트 테마,
-      왼쪽 채팅 + 오른쪽 목영상, 비밀번호 입장, 영상 업로드(로컬 디스크 / Vercel Blob)
-      + 유튜브·mp4 URL 지정, 진행자 [방송 시작] 시 전원 영상 동기화(라이브 시뮬레이션),
-      채팅 전건 코파일럿 분류·응답 + 로그 → `python -m webtest.report <url> <pw>` 로
-      검증 리포트 생성. 배포 절차는 `webtest/README.md` (Vercel + Upstash KV 필수,
-      Blob 선택, 실운영은 Gemini 유료 등급 필요). 로컬 E2E 스모크 통과
-- [ ] **Vercel 배포는 사용자가 수행해야 함** (계정 필요) — README 순서대로
-- [ ] 판매자용 반복 질문 패널 (영상 옆) — **P파트 통합 후 진행하기로 함** (2026-09-03)
-- [ ] 4회차 튜닝 재검증 — 일일 한도 리셋됐으니 `python -m eval.run_eval` 실행 가능
-- [ ] 실방송(목방송 세션) 결과로 목업 대비 격차 리포트 (계획서 2-5)
-- [ ] 평가 결과 보고 `orchestrator/router.py` 의 PROMPT_TEMPLATE 튜닝
-- [ ] **git 원격 없음** — 팀 공유 리포 만들면 remote 추가 후 push 할 것
-      (사용자 규칙: 코드 수정 후 항상 commit + push)
-
-## 실행 방법
-
-```bash
-pip install -r requirements.txt
-copy .env.example .env        # GEMINI_API_KEY 입력
-uvicorn api.main:app --reload # API 서버
-python -m eval.run_eval       # PoC 질문 세트 정확도 리포트 (API 키 필요)
-python -m eval.smoke_offline  # LLM 없이 구조 검증
+```
+shared/          파트 간 계약 (schemas + CopilotPart) — 변경 시 팀 합의
+orchestrator/    라우터(분류 프롬프트)·서비스·공용 llm 클라이언트(인증 env 통일)
+parts/o_part/    O파트: KB 38건 FAQ + 슬롯 치환 (환각 구조 차단) + data/
+parts/p_part/    P파트(현서): rag_retriever/rag_answer(3단 Grounding)/
+                 unanswered_analyzer/interest_tracker + data/ + part.py(어댑터만 내 코드)
+api/             FastAPI (PoC API)
+eval/{o_part,p_part}/  파트별 평가 (각자 data/ 포함), eval/results/ 공용(무시됨)
+webtest/         라이브 목방송 테스트 웹앱 (영상+채팅+판매자알림+시뮬레이터+리포트)
+docs/            EVAL_REPORT.md(O 164건 평가), LIVE_TEST_REPORT.md(세션 리포트)
 ```
 
-API 흐름: `PUT /lives/9401/context` 로 방송·펀딩 컨텍스트 주입 →
-`POST /lives/9401/comments {"text": "..."}` → PartAnswer JSON 반환.
-UNANSWERABLE 폴백 멘트는 `orchestrator/service.py` 의 `UNANSWERABLE_FALLBACK`.
+## 핵심 아키텍처
+
+1. 라우터(Gemini)가 댓글 분류: ANSWER(part_id)/IGNORE(사유)/UNANSWERABLE
+   - FAQ 색인 있는 파트(O)는 faq_id 까지 매칭, 색인 없는 파트(P)는 주제 라우팅만
+     하고 근거 판정은 파트가 자체 수행 (router.py 프롬프트에 명시)
+2. O파트: 답변 본문 LLM 생성 금지 — KB 원문 + 동적 슬롯 치환만. strict 는 원문 고정
+3. P파트(현서): 규칙 기반 retrieval → Gemini Grounding 3단 판정
+   (GROUNDED/PARTIAL_GROUNDED/NO_GROUNDED_INFO) → 어댑터가 ANSWER/UNANSWERABLE 매핑
+4. UNANSWERABLE 은 시청자 채팅 폴백 대신 **판매자 알림**(webtest 오른쪽 패널).
+   P파트 미답변은 현서 analyzer 로 관심 유형(카테고리·토픽) 분석 + interest_tracker 집계
+5. 모델: `gemini-3.5-flash-lite`, 인증은 orchestrator/llm.py 로 통일
+   (env: GEMINI_API_KEY 또는 GOOGLE_GENAI_USE_VERTEXAI=1)
+
+## 현서 코드 취급 원칙 (사용자 지시)
+
+- **로직·프롬프트 무변경**. 허용된 수정: 파일 이동에 따른 경로·임포트,
+  인증 클라이언트 구성의 공용화(llm.client()) 뿐
+- 채팅 필터링(eval/p_part/mvp_live_test.py 의 is_question_comment)과
+  자주 묻는 질문 수집(interest_tracker viewer_questions) 반드시 보존
+
+## 평가 현황
+
+- O파트 164건: 전 지표 PASS (V6 100%, 오드롭 0, 할루시네이션 0, 평균 1.04s)
+  — docs/EVAL_REPORT.md. 4회차 튜닝 재검증은 미실행 (라우터 프롬프트가 통합 중
+  또 바뀌었으므로 **164건 재평가 필요**: `python -m eval.o_part.run_eval`)
+- P파트(현서 자체): 100건 리플레이 Grounding 정확도 85% — parts/p_part/README.md
+- 라이브 목방송 세션 리포트: `python -m webtest.report http://127.0.0.1:8000 <pw>`
+- 비용: 댓글당 ≈$0.0008 (분류 1회 기준. P 경로는 +1~2회 = ≈2~3배)
+
+## 실행
+
+```bash
+pip install -r requirements.txt          # .env: GEMINI_API_KEY, SITE_PASSWORD
+python -m eval.o_part.smoke_offline      # LLM 없이 O+P 구조 검증
+uvicorn webtest.app:app --port 8000      # 라이브 테스트 화면 (비번 기본 team-only)
+python -m webtest.simulate               # 가상 시청자 채팅 (방송 시작 감지 후 65건)
+python -m eval.o_part.run_eval           # O 평가 (무료 등급: 분당15·일500 한도)
+```
+
+## 미결 사항
+
+- [ ] 팀 리포 push (gh auth login 후 main + feat/* 브랜치)
+- [ ] 라우터 변경 반영한 O 164건 재평가
+- [ ] Vercel 배포 (vercel login 필요; webtest/README.md 절차 — KV 필수)
+- [ ] 사용자 PC 영상 재생 끊김: 앱 문제 아님(직접 파일 재생도 끊김 확인),
+      다른 기기/브라우저 하드웨어 가속으로 우회

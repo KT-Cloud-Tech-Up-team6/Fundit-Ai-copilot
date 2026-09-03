@@ -1,19 +1,13 @@
 from typing import Literal
 
-from google import genai
 from google.genai import types
 from pydantic import BaseModel
 
+from orchestrator import llm
 
-PROJECT_ID = "live-copliot"
-LOCATION = "global"
-MODEL = "gemini-3.5-flash-lite"
-
-client = genai.Client(
-    vertexai=True,
-    project=PROJECT_ID,
-    location=LOCATION,
-)
+# 통합 시 변경: 인증·모델 선택을 공용 llm 모듈로 통일
+# (env 로 API 키/Vertex 선택 — 분석 로직·프롬프트 무변경)
+MODEL = llm.DEFAULT_MODEL
 
 
 PCategory = Literal[
@@ -490,7 +484,7 @@ representative_question =
 "앱이나 와이파이로 원격 조작할 수 있나요?"
 """
 
-    response = client.models.generate_content(
+    response = llm.client().models.generate_content(
         model=MODEL,
         contents=prompt,
         config=types.GenerateContentConfig(
