@@ -103,7 +103,14 @@ def main() -> None:
             f"| {fmt_ts(r['ts'])} | {r['nick']} | {r['text']} | {detail} | {label} "
             f"| {r.get('faq_id') or ''} | {r.get('latency_ms', '')}ms | |")
 
-    lines += ["", "## 4. 봇이 실제로 내보낸 답변", ""]
+    alerts = [r for r in records if r.get("type") == "alert"]
+    if alerts:
+        lines += ["", "## 4. 판매자 알림으로 전달된 질문 (UNANSWERABLE)", "",
+                  "AI가 근거 없음으로 판단해 채팅 응답 대신 판매자 패널로 보낸 질문들.", ""]
+        for r in alerts:
+            lines.append(f"- {fmt_ts(r['ts'])} @{r['nick']}: \"{r['text']}\"")
+
+    lines += ["", "## 5. 봇이 실제로 내보낸 답변", ""]
     for r in records:
         if r.get("type") == "bot":
             lines.append(f"> **@{r['reply_nick']} \"{r['reply_text']}\"** → ({r['decision']}"
@@ -113,7 +120,7 @@ def main() -> None:
             lines.append(">")
 
     if errors:
-        lines += ["", "## 5. 오류 목록", ""]
+        lines += ["", "## 6. 오류 목록", ""]
         for r in errors:
             lines.append(f"- {fmt_ts(r['ts'])} {r['nick']}: \"{r['text']}\" → {r['error']}")
 

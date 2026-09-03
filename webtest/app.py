@@ -31,7 +31,7 @@ from pydantic import BaseModel
 from orchestrator.service import CopilotService
 from parts.o_part.part import OPart
 from parts.p_part.part import PPart
-from shared.schemas import Comment, LiveContext
+from shared.schemas import Comment, Decision, LiveContext
 from webtest import store
 
 LIVE_ID = "9401"
@@ -141,8 +141,13 @@ def chat(body: ChatBody):
         )
     store.append(result)
 
-    # 실서비스 동작: ANSWER/UNANSWERABLE 만 채팅으로 답변, IGNORE 는 침묵
-    if ans is not None and ans.answer_text:
+    # ANSWER → 채팅으로 답변 / UNANSWERABLE → 판매자 알림 (채팅 폴백 없음) / IGNORE → 침묵
+    if ans is not None and ans.decision == Decision.UNANSWERABLE:
+        store.append({
+            "type": "alert", "ts": time.time(),
+            "nick": body.nickname[:20], "text": text,
+        })
+    elif ans is not None and ans.answer_text:
         store.append({
             "type": "bot", "text": ans.answer_text, "ts": time.time(),
             "reply_nick": body.nickname[:20], "reply_text": text,
