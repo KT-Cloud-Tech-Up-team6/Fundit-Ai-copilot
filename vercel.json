@@ -1,0 +1,12 @@
+{
+  "builds": [
+    {
+      "src": "webtest/app.py",
+      "use": "@vercel/python",
+      "config": { "includeFiles": "**" }
+    }
+  ],
+  "routes": [
+    { "src": "/(.*)", "dest": "webtest/app.py" }
+  ]
+}

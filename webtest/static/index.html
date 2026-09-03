@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>로보락 F25 ACE 라이브 펀딩 — 코파일럿 테스트</title>
+<style>
+:root{
+  --bg:#F5F6F8; --panel:#FFFFFF; --panel2:#F0F2F5; --line:#E3E6EA;
+  --ink:#1B2430; --soft:#66707D; --accent:#2563EB; --live:#E8114B;
+  --bot-bg:#EEF3FE; --bot-line:#D6E2FB; --warn-bg:#FDF3E3; --warn-line:#F2DFB8; --warn-ink:#8A5A16;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0; background:var(--bg); color:var(--ink);
+  font-family:-apple-system,'Malgun Gothic','Apple SD Gothic Neo',sans-serif; font-size:14px}
+.layout{display:flex; height:100vh}
+/* ---- 채팅 (왼쪽) ---- */
+.chatpane{width:380px; min-width:300px; display:flex; flex-direction:column;
+  background:var(--panel); border-right:1px solid var(--line)}
+.chathead{padding:12px 14px; border-bottom:1px solid var(--line);
+  display:flex; align-items:center; gap:8px; font-weight:700}
+.chathead .n{margin-left:auto; font-weight:400; color:var(--soft); font-size:12px}
+#msgs{flex:1; overflow-y:auto; padding:12px 14px; display:flex; flex-direction:column; gap:8px}
+.m{line-height:1.5; word-break:break-word}
+.m .nick{font-weight:700; margin-right:6px}
+.m.system{color:var(--soft); font-size:12px; text-align:center}
+.m.bot{background:var(--bot-bg); border:1px solid var(--bot-line); border-radius:10px; padding:9px 12px}
+.m.bot.fallback{background:var(--warn-bg); border-color:var(--warn-line)}
+.m.bot .who{font-weight:700; color:var(--accent); font-size:12px}
+.m.bot.fallback .who{color:var(--warn-ink)}
+.m.bot .reply{color:var(--soft); font-size:12px; margin:2px 0 4px;
+  border-left:2px solid var(--line); padding-left:8px}
+.m.bot .meta{margin-top:6px; display:flex; flex-wrap:wrap; gap:4px}
+.m.bot .meta span{font-size:10.5px; font-family:ui-monospace,monospace;
+  background:rgba(0,0,0,.06); border-radius:4px; padding:1px 6px; color:var(--soft)}
+.inputrow{display:flex; gap:8px; padding:12px; border-top:1px solid var(--line)}
+.inputrow input{flex:1; background:var(--panel2); border:1px solid var(--line);
+  border-radius:8px; color:var(--ink); padding:10px 12px; font-size:14px}
+.inputrow input:focus{outline:2px solid var(--accent); outline-offset:-1px}
+button{background:var(--accent); color:#fff; border:none; border-radius:8px;
+  padding:10px 16px; font-size:14px; font-weight:700; cursor:pointer}
+button:focus-visible{outline:2px solid var(--ink); outline-offset:2px}
+button.ghost{background:var(--panel); border:1px solid var(--line); color:var(--soft);
+  font-weight:500; padding:6px 10px; font-size:12px}
+button.ghost:hover{border-color:var(--accent); color:var(--accent)}
+/* ---- 영상 (오른쪽) ---- */
+.videopane{flex:1; display:flex; flex-direction:column; min-width:0}
+.tophead{display:flex; align-items:center; gap:10px; padding:12px 18px;
+  background:var(--panel); border-bottom:1px solid var(--line)}
+.livebadge{display:flex; align-items:center; gap:6px; background:var(--live); color:#fff;
+  border-radius:6px; padding:3px 9px; font-size:12px; font-weight:800; letter-spacing:.05em}
+.livebadge .dot{width:7px;height:7px;border-radius:50%;background:#fff}
+@media (prefers-reduced-motion: no-preference){
+  .livebadge .dot{animation:pu 1.6s infinite}
+  @keyframes pu{50%{opacity:.3}}
+}
+.tophead h1{font-size:15px; margin:0; font-weight:700; white-space:nowrap;
+  overflow:hidden; text-overflow:ellipsis}
+.tophead .elapsed{font-family:ui-monospace,monospace; color:var(--soft); font-size:13px}
+.tophead .admin{margin-left:auto; display:flex; gap:6px; flex-wrap:wrap}
+.stage{flex:1; display:flex; align-items:center; justify-content:center;
+  background:#000; position:relative; min-height:0}
+.stage video,.stage iframe{width:100%; height:100%; border:none; object-fit:contain}
+.waiting{position:absolute; inset:0; display:flex; flex-direction:column; gap:10px;
+  align-items:center; justify-content:center; color:#C8CDD4; background:#000C}
+.waiting b{color:#fff; font-size:18px}
+.statusbar{padding:8px 18px; font-size:12px; color:var(--soft);
+  background:var(--panel); border-top:1px solid var(--line); display:flex; gap:16px; flex-wrap:wrap}
+/* ---- 입장 게이트 ---- */
+#gate{position:fixed; inset:0; background:var(--bg); display:flex;
+  align-items:center; justify-content:center; z-index:10}
+.gatecard{background:var(--panel); border:1px solid var(--line); border-radius:14px;
+  box-shadow:0 8px 30px rgba(27,36,48,.08);
+  padding:28px; width:320px; display:flex; flex-direction:column; gap:10px}
+.gatecard h2{margin:0 0 4px; font-size:17px}
+.gatecard p{margin:0 0 8px; color:var(--soft); font-size:13px}
+.gatecard input{background:var(--panel2); border:1px solid var(--line); border-radius:8px;
+  color:var(--ink); padding:11px 12px; font-size:14px}
+.gatecard .err{color:var(--live); font-size:12px; min-height:16px; margin:0}
+@media (max-width:760px){
+  .layout{flex-direction:column-reverse}
+  .chatpane{width:100%; flex:1; min-height:0}
+  .videopane{flex:none}
+  .stage{aspect-ratio:16/9}
+}
+</style>
+</head>
+<body>
+
+<div id="gate">
+  <form class="gatecard" id="gateForm">
+    <h2>🔴 라이브 테스트 입장</h2>
+    <p>로보락 F25 ACE 라이브 펀딩 — 코파일럿 검증 방송</p>
+    <input id="gNick" placeholder="닉네임" maxlength="20" autocomplete="off" required>
+    <input id="gPass" type="password" placeholder="팀 비밀번호" required>
+    <p class="err" id="gErr"></p>
+    <button type="submit">입장하기</button>
+  </form>
+</div>
+
+<div class="layout" hidden id="main">
+  <aside class="chatpane">
+    <div class="chathead">💬 실시간 채팅 <span class="n" id="msgCount"></span></div>
+    <div id="msgs" aria-live="polite"></div>
+    <form class="inputrow" id="chatForm">
+      <input id="chatInput" placeholder="채팅을 입력하세요" maxlength="300" autocomplete="off">
+      <button type="submit">전송</button>
+    </form>
+  </aside>
+
+  <main class="videopane">
+    <div class="tophead">
+      <span class="livebadge"><span class="dot"></span>LIVE</span>
+      <h1>로보락 F25 ACE — 목표 142% 달성 중</h1>
+      <span class="elapsed" id="elapsed">대기 중</span>
+      <span class="admin">
+        <button class="ghost" id="btnUpload">영상 업로드</button>
+        <button class="ghost" id="btnUrl">영상 URL</button>
+        <button class="ghost" id="btnStart">방송 시작</button>
+        <button class="ghost" id="btnExport">로그 내보내기</button>
+      </span>
+      <input type="file" id="fileInput" accept="video/*" hidden>
+    </div>
+    <div class="stage" id="stage">
+      <div class="waiting" id="waiting"><b>방송 시작 전입니다</b><span>진행자가 [방송 시작]을 누르면 재생됩니다</span></div>
+    </div>
+    <div class="statusbar">
+      <span id="stBackend"></span><span id="stMe"></span><span id="stUpload"></span>
+      <span>댓글은 코파일럿이 실시간 분류·응답합니다 (IGNORE는 무응답)</span>
+    </div>
+  </main>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+let nick = localStorage.getItem('lt_nick') || '';
+let pass = localStorage.getItem('lt_pass') || '';
+let backend = '', videoUrl = '', seq = 0, startedAt = null, serverOffset = 0, videoEl = null;
+
+const COLORS = ['#2563EB','#C2410C','#15803D','#BE185D','#7C3AED','#0E7490','#A16207'];
+const colorOf = n => COLORS[[...n].reduce((a,c)=>a+c.charCodeAt(0),0) % COLORS.length];
+const esc = s => s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+$('gNick').value = nick;
+$('gateForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const r = await fetch('/api/join', {method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({nickname:$('gNick').value, password:$('gPass').value})});
+  if (!r.ok) { $('gErr').textContent = (await r.json()).detail || '입장 실패'; return; }
+  const d = await r.json();
+  nick = d.nickname; pass = $('gPass').value; videoUrl = d.video_url; backend = d.backend;
+  localStorage.setItem('lt_nick', nick); localStorage.setItem('lt_pass', pass);
+  $('gate').hidden = true; $('main').hidden = false;
+  $('stBackend').textContent = '저장소: ' + backend;
+  $('stMe').textContent = '닉네임: ' + nick;
+  poll(); setInterval(poll, 1500); setInterval(tick, 500);
+});
+
+$('chatForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const text = $('chatInput').value.trim();
+  if (!text) return;
+  $('chatInput').value = '';
+  const r = await fetch('/api/chat', {method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({nickname:nick, password:pass, text})});
+  if (r.ok) poll();
+});
+
+/* ---- 영상 설정 ---- */
+$('btnUrl').addEventListener('click', async () => {
+  const url = prompt('영상 URL을 입력하세요 (유튜브 링크 또는 mp4 주소)');
+  if (!url) return;
+  await fetch('/api/set-video', {method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({password:pass, url})});
+  poll();
+});
+
+$('btnUpload').addEventListener('click', () => $('fileInput').click());
+$('fileInput').addEventListener('change', async () => {
+  const file = $('fileInput').files[0];
+  if (!file) return;
+  $('stUpload').textContent = `업로드 중… (${(file.size/1048576).toFixed(1)}MB)`;
+  try {
+    if (backend === 'memory') {
+      // 로컬 서버: 직접 업로드
+      const fd = new FormData(); fd.append('file', file);
+      const r = await fetch('/api/upload?password=' + encodeURIComponent(pass), {method:'POST', body:fd});
+      if (!r.ok) throw new Error((await r.json()).detail || '업로드 실패');
+    } else {
+      // Vercel: Blob 저장소로 브라우저에서 직접 업로드
+      const tr = await fetch('/api/blob-token', {method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({password:pass})});
+      if (!tr.ok) throw new Error((await tr.json()).detail || 'Blob 미설정 — [영상 URL]로 링크를 넣어주세요');
+      const {token} = await tr.json();
+      const up = await fetch('https://blob.vercel-storage.com/livetest/' + encodeURIComponent(file.name), {
+        method:'PUT', body:file,
+        headers:{'Authorization':'Bearer '+token, 'x-api-version':'7',
+                 'x-content-type':file.type || 'video/mp4', 'x-add-random-suffix':'1'}});
+      if (!up.ok) throw new Error('Blob 업로드 실패 — [영상 URL]로 링크를 넣어주세요');
+      const {url} = await up.json();
+      await fetch('/api/set-video', {method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({password:pass, url})});
+    }
+    $('stUpload').textContent = '영상 업로드 완료';
+    poll();
+  } catch (e) {
+    $('stUpload').textContent = '⚠ ' + e.message;
+  }
+});
+
+$('btnStart').addEventListener('click', async () => {
+  if (!confirm('방송을 시작할까요? 모든 참가자의 영상이 재생됩니다.')) return;
+  await fetch('/api/start', {method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({password:pass})});
+  poll();
+});
+$('btnExport').addEventListener('click', () =>
+  window.open('/api/export?password=' + encodeURIComponent(pass)));
+
+/* ---- 폴링·렌더 ---- */
+async function poll(){
+  try{
+    const r = await fetch(`/api/state?password=${encodeURIComponent(pass)}&since=${seq}`);
+    if (!r.ok) return;
+    const d = await r.json();
+    serverOffset = d.now - Date.now()/1000;
+    if (d.video_url && d.video_url !== videoUrl){ videoUrl = d.video_url; unmountVideo(); }
+    if (d.started_at && !startedAt) startedAt = d.started_at;
+    if (startedAt && videoUrl && !document.querySelector('.stage video, .stage iframe')) mountVideo();
+    seq = d.seq;
+    for (const m of d.messages) render(m);
+  }catch(e){}
+}
+
+function render(m){
+  if (m.type === 'result') return;             // 판정 로그는 화면에 안 그림
+  const box = document.createElement('div');
+  if (m.type === 'user'){
+    box.className = 'm';
+    box.innerHTML = `<span class="nick" style="color:${colorOf(m.nick)}">${esc(m.nick)}</span>${esc(m.text)}`;
+  } else if (m.type === 'bot'){
+    const fb = m.decision === 'UNANSWERABLE';
+    box.className = 'm bot' + (fb ? ' fallback' : '');
+    box.innerHTML = `<div class="who">🤖 펀딩 도우미</div>
+      <div class="reply">@${esc(m.reply_nick)} ${esc(m.reply_text)}</div>
+      <div>${esc(m.text)}</div>
+      <div class="meta"><span>${m.decision}</span>${m.label?`<span>${m.label}</span>`:''}${m.faq_id?`<span>${m.faq_id}</span>`:''}<span>${m.latency_ms}ms</span></div>`;
+  } else if (m.type === 'system'){
+    box.className = 'm system'; box.textContent = '· ' + m.text + ' ·';
+  } else return;
+  $('msgs').appendChild(box);
+  $('msgs').scrollTop = $('msgs').scrollHeight;
+  $('msgCount').textContent = document.querySelectorAll('#msgs .m').length + '개';
+}
+
+function elapsedSec(){
+  return startedAt ? Math.max(0, (Date.now()/1000 + serverOffset) - startedAt) : 0;
+}
+
+function unmountVideo(){
+  document.querySelectorAll('.stage video, .stage iframe').forEach(el => el.remove());
+  videoEl = null;
+}
+
+function mountVideo(){
+  $('waiting').hidden = true;
+  const el = elapsedSec();
+  if (/youtube\.com|youtu\.be/.test(videoUrl)){
+    const id = (videoUrl.match(/(?:v=|youtu\.be\/|embed\/)([\w-]{6,})/)||[])[1] || '';
+    $('stage').insertAdjacentHTML('afterbegin',
+      `<iframe src="https://www.youtube.com/embed/${id}?autoplay=1&mute=1&start=${Math.floor(el)}&rel=0" allow="autoplay" title="live"></iframe>`);
+  } else {
+    $('stage').insertAdjacentHTML('afterbegin', `<video src="${esc(videoUrl)}" autoplay muted playsinline></video>`);
+    videoEl = $('stage').querySelector('video');
+    videoEl.addEventListener('loadedmetadata', () => { videoEl.currentTime = elapsedSec(); });
+    // 라이브 흉내: 3초 이상 어긋나면 현재 방송 시점으로 강제 동기화
+    setInterval(() => {
+      if (videoEl && Math.abs(videoEl.currentTime - elapsedSec()) > 3)
+        videoEl.currentTime = elapsedSec();
+    }, 4000);
+    const un = document.createElement('button');
+    un.textContent = '🔊 소리 켜기'; un.style.cssText='position:absolute;bottom:14px;right:14px';
+    un.onclick = () => { videoEl.muted = false; un.remove(); };
+    $('stage').appendChild(un);
+  }
+}
+
+function tick(){
+  if (!startedAt){ $('elapsed').textContent = '대기 중'; return; }
+  const s = Math.floor(elapsedSec());
+  $('elapsed').textContent = `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')} 경과`;
+}
+</script>
+</body>
+</html>

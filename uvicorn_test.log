@@ -1,0 +1,15 @@
+INFO:     Started server process [48544]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8777 (Press CTRL+C to quit)
+INFO:     127.0.0.1:59154 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59155 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59156 - "POST /api/join HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59157 - "POST /api/join HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:59158 - "POST /api/set-video HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64065 - "POST /api/start HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64066 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64070 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54290 - "POST /api/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53169 - "GET /api/state?password=team-only&since=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53170 - "GET /api/export?password=team-only HTTP/1.1" 200 OK

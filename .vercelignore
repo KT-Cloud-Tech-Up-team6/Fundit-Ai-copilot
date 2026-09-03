@@ -1,7 +1,8 @@
 .env
+eval/results/
+webtest/uploads/
 __pycache__/
 *.pyc
 .venv/
 venv/
-eval/results/
-webtest/uploads/
+docs/
