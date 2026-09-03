@@ -23,9 +23,9 @@ logging.getLogger(
 ).setLevel(logging.ERROR)
 
 
-from interest_tracker import InterestTracker
-from rag_answer import answer_question
-from unanswered_analyzer import analyze_unanswered
+from parts.p_part.interest_tracker import InterestTracker
+from parts.p_part.rag_answer import answer_question
+from parts.p_part.unanswered_analyzer import analyze_unanswered
 
 
 # =========================================================

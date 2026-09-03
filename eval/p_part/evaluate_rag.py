@@ -3,13 +3,14 @@ import time
 from pathlib import Path
 from collections import defaultdict
 
-from rag_retriever import retrieve
-from rag_answer import answer_question
+from parts.p_part.rag_retriever import retrieve
+from parts.p_part.rag_answer import answer_question
 
 
-INPUT_FILE = Path("p_rag_eval_50.json")
-RESULT_FILE = Path("p_rag_eval_results.json")
-SUMMARY_FILE = Path("p_rag_eval_summary.json")
+# 통합 재배치: 입력은 eval/p_part/data/, 결과는 eval/results/ 공용 (경로만 수정)
+INPUT_FILE = Path(__file__).parent / "data" / "p_rag_eval_50.json"
+RESULT_FILE = Path(__file__).parent.parent / "results" / "p_rag_eval_results.json"
+SUMMARY_FILE = Path(__file__).parent.parent / "results" / "p_rag_eval_summary.json"
 
 TOP_K = 2
 

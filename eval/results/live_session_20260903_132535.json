@@ -1,0 +1,1830 @@
+{
+  "exported_at": 1788409535.5541422,
+  "state": {
+    "video_url": "https://www.youtube.com/watch?v=3-T3ZrLfKnE",
+    "started_at": 1788404254.389721
+  },
+  "backend": "memory",
+  "records": [
+    {
+      "type": "system",
+      "text": "방송이 시작됐습니다",
+      "ts": 1788404254.389721
+    },
+    {
+      "type": "user",
+      "nick": "집순이",
+      "text": "방송 기다렸어요!",
+      "ts": 1788404256.4940937
+    },
+    {
+      "type": "result",
+      "for_seq": 2,
+      "nick": "집순이",
+      "text": "방송 기다렸어요!",
+      "ts": 1788404256.4940937,
+      "latency_ms": 1188,
+      "decision": "IGNORE",
+      "label": null,
+      "faq_id": null,
+      "strict": false,
+      "ignored_reason": "SMALLTALK"
+    },
+    {
+      "type": "user",
+      "nick": "먼지없는집",
+      "text": "와 벌써 사람 많다",
+      "ts": 1788404264.172241
+    },
+    {
+      "type": "result",
+      "for_seq": 4,
+      "nick": "먼지없는집",
+      "text": "와 벌써 사람 많다",
+      "ts": 1788404264.172241,
+      "latency_ms": 1082,
+      "decision": "IGNORE",
+      "label": null,
+      "faq_id": null,
+      "strict": false,
+      "ignored_reason": "SMALLTALK"
+    },
+    {
+      "type": "user",
+      "nick": "혼수준비중",
+      "text": "오늘 처음 왔어요",
+      "ts": 1788404273.099775
+    },
+    {
+      "type": "result",
+      "for_seq": 6,
+      "nick": "혼수준비중",
+      "text": "오늘 처음 왔어요",
+      "ts": 1788404273.099775,
+      "latency_ms": 1278,
+      "decision": "IGNORE",
+      "label": null,
+      "faq_id": null,
+      "strict": false,
+      "ignored_reason": "SMALLTALK"
+    },
+    {
+      "type": "user",
+      "nick": "구름토끼",
+      "text": "안녕하세요~",
+      "ts": 1788404282.3031373
+    },
+    {
+      "type": "result",
+      "for_seq": 8,
+      "nick": "구름토끼",
+      "text": "안녕하세요~",
+      "ts": 1788404282.3031373,
+      "latency_ms": 1068,
+      "decision": "IGNORE",
+      "label": null,
+      "faq_id": null,
+      "strict": false,
+      "ignored_reason": "SMALLTALK"
+    },
+    {
+      "type": "user",
+      "nick": "쇼핑홀릭",
+      "text": "퇴근하자마자 들어왔네요",
+      "ts": 1788404287.232804
+    },
+    {
+      "type": "result",
+      "for_seq": 10,
+      "nick": "쇼핑홀릭",
+      "text": "퇴근하자마자 들어왔네요",
+      "ts": 1788404287.232804,
+      "latency_ms": 1084,
+      "decision": "IGNORE",
+      "label": null,
+      "faq_id": null,
+      "strict": false,
+      "ignored_reason": "SMALLTALK"
+    },
+    {
+      "type": "user",
+      "nick": "라이브죽순이",
+      "text": "다들 반가워요",
+      "ts": 1788404296.1867971
+    },
+    {
+      "type": "result",
+      "for_seq": 12,
+      "nick": "라이브죽순이",
+      "text": "다들 반가워요",
+      "ts": 1788404296.1867971,
+      "latency_ms": 1119,
+      "decision": "IGNORE",
+      "label": null,
+      "faq_id": null,
+      "strict": false,
+      "ignored_reason": "SMALLTALK"
+    },
+    {
+      "type": "user",
+      "nick": "살림왕",
+      "text": "다시보기 되나요?",
+      "ts": 1788404302.0938797
+    },
+    {
+      "type": "result",
+      "for_seq": 14,
+      "nick": "살림왕",
+      "text": "다시보기 되나요?",
+      "ts": 1788404302.0938797,
+      "latency_ms": 1088,
+      "decision": "ANSWER",
+      "label": "BROADCAST_INFO",
+      "faq_id": "faq_bc_002",
+      "strict": false,
+      "ignored_reason": null
+    },
+    {
+      "type": "bot",
+      "text": "이 방송은 다시보기로 제공됩니다. 방송 종료 약 30분 뒤 프로젝트 페이지에서 보실 수 있습니다.",
+      "ts": 1788404303.1833463,
+      "reply_nick": "살림왕",
+      "reply_text": "다시보기 되나요?",
+      "decision": "ANSWER",
+      "label": "BROADCAST_INFO",
+      "faq_id": "faq_bc_002",
+      "latency_ms": 1088
+    },
+    {
+      "type": "user",
+      "nick": "바리",
+      "text": "이거 무선인가요?",
+      "ts": 1788404305.1279178
+    },
+    {
+      "type": "result",
+      "for_seq": 17,
+      "nick": "바리",
+      "text": "이거 무선인가요?",
+      "ts": 1788404305.1279178,
+      "latency_ms": 1077,
+      "decision": "UNANSWERABLE",
+      "label": "제품 성능 및 사양",
+      "faq_id": null,
+      "strict": false,
+      "ignored_reason": null
+    },
+    {
+      "type": "alert",
+      "ts": 1788404306.2043722,
+      "nick": "바리",
+      "text": "이거 무선인가요?"
+    },
+    {
+      "type": "user",
+      "nick": "먼지없는집",
+      "text": "펀딩 언제까지예요?",
+      "ts": 1788404311.4511344
+    },
+    {
+      "type": "result",
+      "for_seq": 20,
+      "nick": "먼지없는집",
+      "text": "펀딩 언제까지예요?",
+      "ts": 1788404311.4511344,
+      "latency_ms": 1137,
+      "decision": "ANSWER",
+      "label": "FUNDING_PROCESS",
+      "faq_id": "faq_fp_001",
+      "strict": false,
+      "ignored_reason": null
+    },
+    {
+      "type": "bot",
+      "text": "이 프로젝트는 2026년 9월 15일 23시 59분에 마감됩니다.",
+      "ts": 1788404312.588484,
+      "reply_nick": "먼지없는집",
+      "reply_text": "펀딩 언제까지예요?",
+      "decision": "ANSWER",
+      "label": "FUNDING_PROCESS",
+      "faq_id": "faq_fp_001",
+      "latency_ms": 1137
+    },
+    {
+      "type": "user",
+      "nick": "댕댕이집사",
+      "text": "무선인가요?",
+      "ts": 1788404316.4295223
+    },
+    {
+      "type": "result",
+      "for_seq": 23,
+      "nick": "댕댕이집사",
+      "text": "무선인가요?",
+      "ts": 1788404316.4295223,
+      "latency_ms": 1083,
+      "decision": "UNANSWERABLE",
+      "label": "제품 성능 및 사양",
+      "faq_id": null,
+      "strict": false,
+      "ignored_reason": null
+    },
+    {
+      "type": "alert",
+      "ts": 1788404317.511771,
+      "nick": "댕댕이집사",
+      "text": "무선인가요?"
+    },
+    {
+      "type": "user",
+      "nick": "구름토끼",
+      "text": "오늘 몇시까지 하나요",
+      "ts": 1788404323.8418314
+    },
+    {
+      "type": "result",
+      "for_seq": 26,
+      "nick": "구름토끼",
+      "text": "오늘 몇시까지 하나요",
+      "ts": 1788404323.8418314,
+      "latency_ms": 1132,
+      "decision": "ANSWER",
+      "label": "BROADCAST_INFO",
+      "faq_id": "faq_bc_001",
+      "strict": false,
+      "ignored_reason": null
+    },
+    {
+      "type": "bot",
+      "text": "오늘 방송은 20시 10분에 종료됩니다.",
+      "ts": 1788404324.9735098,
+      "reply_nick": "구름토끼",
+      "reply_text": "오늘 몇시까지 하나요",
+      "decision": "ANSWER",
+      "label": "BROADCAST_INFO",
+      "faq_id": "faq_bc_001",
+      "latency_ms": 1132
+    },
+    {
+      "type": "user",
+      "nick": "혼수준비중",
+      "text": "디자인 진짜 예쁘네요",
+      "ts": 1788404331.5532758
+    },
+    {
+      "type": "result",
+      "for_seq": 29,
+      "nick": "혼수준비중",
+      "text": "디자인 진짜 예쁘네요",
+      "ts": 1788404331.5532758,
+      "latency_ms": 1193,
+      "decision": "IGNORE",
+      "label": null,
+      "faq_id": null,
+      "strict": false,
+      "ignored_reason": "NOT_QUESTION"
+    },
+    {
+      "type": "user",
+      "nick": "미니멀리스트",
+      "text": "오 색상 고급스럽다",
+      "ts": 1788404339.3599796
+    },
+    {
+      "type": "result",
+      "for_seq": 31,
+      "nick": "미니멀리스트",
+      "text": "오 색상 고급스럽다",
+      "ts": 1788404339.3599796,
+      "latency_ms": 1242,
+      "decision": "IGNORE",
+      "label": null,
+      "faq_id": null,
+      "strict": false,
+      "ignored_reason": "NOT_QUESTION"
+    },
+    {
+      "type": "user",
+      "nick": "쇼핑홀릭",
+      "text": "이거 로봇청소기 신형이에요?",
+      "ts": 1788404346.016376
+    },
+    {
+      "type": "result",
+      "for_seq": 33,
+      "nick": "쇼핑홀릭",
+      "text": "이거 로봇청소기 신형이에요?",
+      "ts": 1788404346.016376,
+      "latency_ms": 1134,
+      "decision": "UNANSWERABLE",
+      "label": "제품 성능 및 사양",
+      "faq_id": null,
+      "strict": false,
+      "ignored_reason": null
+    },
+    {
+      "type": "alert",
+      "ts": 1788404347.149879,
+      "nick": "쇼핑홀릭",
+      "text": "이거 로봇청소기 신형이에요?"
+    },
+    {
+      "type": "user",
+      "nick": "청소는귀찮아",
+      "text": "앱 없어도 참여할 수 있어요?",
+      "ts": 1788404353.7635179
+    },
+    {
+      "type": "result",
+      "for_seq": 36,
+      "nick": "청소는귀찮아",
+      "text": "앱 없어도 참여할 수 있어요?",
+      "ts": 1788404353.7635179,
+      "latency_ms": 1159,
+      "decision": "ANSWER",
+      "label": "ACCOUNT_APP",
+      "faq_id": "faq_ac_001",
+      "strict": false,
+      "ignored_reason": null
+    },
+    {
+      "type": "bot",
+      "text": "앱 설치 없이 웹에서도 펀딩에 참여하실 수 있습니다.",
+      "ts": 1788404354.9226792,
+      "reply_nick": "청소는귀찮아",
+      "reply_text": "앱 없어도 참여할 수 있어요?",
+      "decision": "ANSWER",
+      "label": "ACCOUNT_APP",
+      "faq_id": "faq_ac_001",
+      "latency_ms": 1159
+    },
+    {
+      "type": "user",
+      "nick": "댕댕이집사",
+      "text": "지금 몇 퍼센트 달성했어요?",
+      "ts": 1788404361.8061764
+    },
+    {
+      "type": "result",
+      "for_seq": 39,
+      "nick": "댕댕이집사",
+      "text": "지금 몇 퍼센트 달성했어요?",
+      "ts": 1788404361.8061764,
+      "latency_ms": 1333,
+      "decision": "ANSWER",
+      "label": "FUNDING_PROCESS",
+      "faq_id": "faq_fp_002",
+      "strict": false,
+      "ignored_reason": null
+    },
+    {
+      "type": "bot",
+      "text": "현재 목표 금액의 142%를 달성했습니다. 목표를 이미 넘겼기 때문에 펀딩은 확정 진행됩니다.",
+      "ts": 1788404363.1395524,
+      "reply_nick": "댕댕이집사",
+      "reply_text": "지금 몇 퍼센트 달성했어요?",
+      "decision": "ANSWER",
+      "label": "FUNDING_PROCESS",
+      "faq_id": "faq_fp_002",
+      "latency_ms": 1333
+    },
+    {
+      "type": "user",
+      "nick": "월급루팡",
+      "text": "회원가입 꼭 해야 하나요?",
+      "ts": 1788404367.0866785
+    },
+    {
+      "type": "result",
+      "for_seq": 42,
+      "nick": "월급루팡",
+      "text": "회원가입 꼭 해야 하나요?",
+      "ts": 1788404367.0866785,
+      "latency_ms": 1057,
+      "decision": "ANSWER",
+      "label": "ACCOUNT_APP",
+      "faq_id": "faq_ac_002",
+      "strict": false,
+      "ignored_reason": null
+    },
+    {
+      "type": "bot",
+      "text": "펀딩 참여를 위해서는 회원가입과 본인인증이 필요합니다.",
+      "ts": 1788404368.143803,
+      "reply_nick": "월급루팡",
+      "reply_text": "회원가입 꼭 해야 하나요?",
+      "decision": "ANSWER",
+      "label": "ACCOUNT_APP",
+      "faq_id": "faq_ac_002",
+      "latency_ms": 1057
+    },
+    {
+      "type": "user",
+      "nick": "청소는귀찮아",
+      "text": "화질 좋네요",
+      "ts": 1788404372.4487455
+    },
+    {
+      "type": "result",
+      "for_seq": 45,
+      "nick": "청소는귀찮아",
+      "text": "화질 좋네요",
+      "ts": 1788404372.4487455,
+      "latency_ms": 1023,
+      "decision": "IGNORE",
+      "label": null,
+      "faq_id": null,
+      "strict": false,
+      "ignored_reason": "NOT_QUESTION"
+    },
+    {
+      "type": "user",
+      "nick": "미니멀리스트",
+      "text": "방송 몇 시까지 해요?",
+      "ts": 1788404380.8219817
+    },
+    {
+      "type": "result",
+      "for_seq": 47,
+      "nick": "미니멀리스트",
+      "text": "방송 몇 시까지 해요?",
+      "ts": 1788404380.8219817,
+      "latency_ms": 1377,
+      "decision": "ANSWER",
+      "label": "BROADCAST_INFO",
+      "faq_id": "faq_bc_001",
+      "strict": false,
+      "ignored_reason": null
+    },
+    {
+      "type": "bot",
+      "text": "오늘 방송은 20시 10분에 종료됩니다.",
+      "ts": 1788404382.1996534,
+      "reply_nick": "미니멀리스트",
+      "reply_text": "방송 몇 시까지 해요?",
+      "decision": "ANSWER",
+      "label": "BROADCAST_INFO",
+      "faq_id": "faq_bc_001",
+      "latency_ms": 1377
+    },
+    {
+      "type": "user",
+      "nick": "집순이",
+      "text": "소음은 어때요?",
+      "ts": 1788404388.6573951
+    },
+    {
+      "type": "result",
+      "for_seq": 50,
+      "nick": "집순이",
+      "text": "소음은 어때요?",
+      "ts": 1788404388.6573951,
+      "latency_ms": 1194,
+      "decision": "UNANSWERABLE",
+      "label": "제품 성능 및 사양",
+      "faq_id": null,
+      "strict": false,
+      "ignored_reason": null
+    },
+    {
+      "type": "alert",
+      "ts": 1788404389.8520553,
+      "nick": "집순이",
+      "text": "소음은 어때요?"
+    },
+    {
+      "type": "user",
+      "nick": "살림왕",
+      "text": "흡입력은 어느 정도예요?",
+      "ts": 1788404396.9233105
+    },
+    {
+      "type": "result",
+      "for_seq": 53,
+      "nick": "살림왕",
+      "text": "흡입력은 어느 정도예요?",
+      "ts": 1788404396.9233105,
+      "latency_ms": 1219,
+      "decision": "UNANSWERABLE",
+      "label": "제품 성능 및 사양",
+      "faq_id": null,
+      "strict": false,
+      "ignored_reason": null
+    },
+    {
+      "type": "alert",
+      "ts": 1788404398.142405,
+      "nick": "살림왕",
+      "text": "흡입력은 어느 정도예요?"
+    },
+    {
+      "type": "user",
+      "nick": "혼수준비중",
+      "text": "젤 싼 구성이 얼마예요?",
+      "ts": 1788404402.9766877
+    },
+    {
+      "type": "result",
+      "for_seq": 56,
+      "nick": "혼수준비중",
+      "text": "젤 싼 구성이 얼마예요?",
+      "ts": 1788404402.9766877,
+      "latency_ms": 1139,
+      "decision": "ANSWER",
+      "label": "REWARD_OPTION",
+      "faq_id": "faq_rw_004",
+      "strict": false,
+      "ignored_reason": null
+    },
+    {
+      "type": "bot",
+      "text": "리워드 구성은 얼리버드 389,000원, 기본 429,000원, 풀패키지 489,000원 세 가지입니다.",
+      "ts": 1788404404.115709,
+      "reply_nick": "혼수준비중",
+      "reply_text": "젤 싼 구성이 얼마예요?",
+      "decision": "ANSWER",
+      "label": "REWARD_OPTION",
+      "faq_id": "faq_rw_004",
+      "latency_ms": 1139
+    },
+    {
+      "type": "user",
+      "nick": "라이브죽순이",
+      "text": "목표 못 채우면 돈 돌려주나요?",
+      "ts": 1788404407.8112216
+    },
+    {
+      "type": "result",
+      "for_seq": 59,
+      "nick": "라이브죽순이",
+      "text": "목표 못 채우면 돈 돌려주나요?",
+      "ts": 1788404407.8112216,
+      "latency_ms": 1030,
+      "decision": "ANSWER",
+      "label": "FUNDING_PROCESS",
+      "faq_id": "faq_fp_003",
+      "strict": true,
+      "ignored_reason": null
+    },
+    {
+      "type": "bot",
+      "text": "목표 금액을 채우지 못하면 펀딩은 진행되지 않으며, 결제도 이루어지지 않습니다.",
+      "ts": 1788404408.8412094,
+      "reply_nick": "라이브죽순이",
+      "reply_text": "목표 못 채우면 돈 돌려주나요?",
+      "decision": "ANSWER",
+      "label": "FUNDING_PROCESS",
+      "faq_id": "faq_fp_003",
+      "latency_ms": 1030
+    },
+    {
+      "type": "user",
+      "nick": "바리",
+      "text": "언니 너무 예뻐용",
+      "ts": 1788404412.773927
+    },
+    {
+      "type": "result",
+      "for_seq": 62,
+      "nick": "바리",
+      "text": "언니 너무 예뻐용",
+      "ts": 1788404412.773927,
+      "latency_ms": 1098,
+      "decision": "IGNORE",
+      "label": null,
+      "faq_id": null,
+      "strict": false,
+      "ignored_reason": "SMALLTALK"
+    },
+    {
+      "type": "user",
+      "nick": "새벽배송러",
+      "text": "할부 몇 개월까지 돼요?",
+      "ts": 1788404414.072628
+    },
+    {
+      "type": "result",
+      "for_seq": 64,
+      "nick": "새벽배송러",
+      "text": "할부 몇 개월까지 돼요?",
+      "ts": 1788404414.072628,
+      "latency_ms": 990,
+      "decision": "ANSWER",
+      "label": "PAYMENT",
+      "faq_id": "faq_pay_005",
+      "strict": false,
+      "ignored_reason": null
+    },
+    {
+      "type": "bot",
+      "text": "최대 9개월 무이자 할부를 지원합니다. (일부 카드사 제외)",
+      "ts": 1788404415.0634818,
+      "reply_nick": "새벽배송러",
+      "reply_text": "할부 몇 개월까지 돼요?",
+      "decision": "ANSWER",
+      "label": "PAYMENT",
+      "faq_id": "faq_pay_005",
+      "latency_ms": 990
+    },
+    {
+      "type": "user",
+      "nick": "월급루팡",
+      "text": "카드 한도 부족하면 어떻게 돼요?",
+      "ts": 1788404421.0289652
+    },
+    {
+      "type": "result",
+      "for_seq": 67,
+      "nick": "월급루팡",
+      "text": "카드 한도 부족하면 어떻게 돼요?",
+      "ts": 1788404421.0289652,
+      "latency_ms": 1206,
+      "decision": "ANSWER",
+      "label": "PAYMENT",
+      "faq_id": "faq_pay_003",
+      "strict": true,
+      "ignored_reason": null
+    },
+    {
+      "type": "bot",
+      "text": "결제일에 카드 한도 초과 등으로 결제가 실패하면 3일간 매일 1회 재시도하며, 최종 실패 시 펀딩 신청이 자동 취소됩니다.",
+      "ts": 1788404422.2353544,
+      "reply_nick": "월급루팡",
+      "reply_text": "카드 한도 부족하면 어떻게 돼요?",
+      "decision": "ANSWER",
+      "label": "PAYMENT",
+      "faq_id": "faq_pay_003",
+      "latency_ms": 1206
+    },
+    {
+      "type": "user",
+      "nick": "바리",
+      "text": "펀딩 비용 얼마임",
+      "ts": 1788404424.0683935
+    },
+    {
+      "type": "result",
+      "for_seq": 70,
+      "nick": "바리",
+      "text": "펀딩 비용 얼마임",
+      "ts": 1788404424.0683935,
+      "latency_ms": 1123,
+      "decision": "ANSWER",
+      "label": "REWARD_OPTION",
+      "faq_id": "faq_rw_004",
+      "strict": false,
+      "ignored_reason": null
+    },
+    {
+      "type": "bot",
+      "text": "리워드 구성은 얼리버드 389,000원, 기본 429,000원, 풀패키지 489,000원 세 가지입니다.",
+      "ts": 1788404425.192618,
+      "reply_nick": "바리",
+      "reply_text": "펀딩 비용 얼마임",
+      "decision": "ANSWER",
+      "label": "REWARD_OPTION",
+      "faq_id": "faq_rw_004",
+      "latency_ms": 1123
+    },
+    {
+      "type": "user",
+      "nick": "라이브죽순이",
+      "text": "적립금이랑 쿠폰 같이 써져요?",
+      "ts": 1788404429.1532607
+    },
+    {
+      "type": "result",
+      "for_seq": 73,
+      "nick": "라이브죽순이",
+      "text": "적립금이랑 쿠폰 같이 써져요?",
+      "ts": 1788404429.1532607,
+      "latency_ms": 1124,
+      "decision": "ANSWER",
+      "label": "EVENT_COUPON",
+      "faq_id": "faq_ev_002",
+      "strict": false,
+      "ignored_reason": null
+    },
+    {
+      "type": "bot",
+      "text": "쿠폰과 적립금은 중복 사용이 가능합니다.",
+      "ts": 1788404430.2782187,
+      "reply_nick": "라이브죽순이",
+      "reply_text": "적립금이랑 쿠폰 같이 써져요?",
+      "decision": "ANSWER",
+      "label": "EVENT_COUPON",
+      "faq_id": "faq_ev_002",
+      "latency_ms": 1124
+    },
+    {
+      "type": "user",
+      "nick": "쇼핑홀릭",
+      "text": "두 개 사고 싶은데 어떻게 해요?",
+      "ts": 1788404433.762379
+    },
+    {
+      "type": "result",
+      "for_seq": 76,
+      "nick": "쇼핑홀릭",
+      "text": "두 개 사고 싶은데 어떻게 해요?",
+      "ts": 1788404433.762379,
+      "latency_ms": 1066,
+      "decision": "ANSWER",
+      "label": "REWARD_OPTION",
+      "faq_id": "faq_rw_003",
+      "strict": false,
+      "ignored_reason": null
+    },
+    {
+      "type": "bot",
+      "text": "두 개 이상 구매하시려면 원하는 리워드를 각각 신청해 주세요.",
+      "ts": 1788404434.8282158,
+      "reply_nick": "쇼핑홀릭",
+      "reply_text": "두 개 사고 싶은데 어떻게 해요?",
+      "decision": "ANSWER",
+      "label": "REWARD_OPTION",
+      "faq_id": "faq_rw_003",
+      "latency_ms": 1066
+    },
+    {
+      "type": "user",
+      "nick": "미니멀리스트",
+      "text": "물걸레 세척은 자동인가요?",
+      "ts": 1788404441.227589
+    },
+    {
+      "type": "result",
+      "for_seq": 79,
+      "nick": "미니멀리스트",
+      "text": "물걸레 세척은 자동인가요?",
+      "ts": 1788404441.227589,
+      "latency_ms": 1155,
+      "decision": "UNANSWERABLE",
+      "label": "주요 기능",
+      "faq_id": null,
+      "strict": false,
+      "ignored_reason": null
+    },
+    {
+      "type": "alert",
+      "ts": 1788404442.3836837,
+      "nick": "미니멀리스트",
+      "text": "물걸레 세척은 자동인가요?"
+    },
+    {
+      "type": "user",
+      "nick": "라이브죽순이",
+      "text": "와 142%라니 대박이다",
+      "ts": 1788404447.9974668
+    },
+    {
+      "type": "result",
+      "for_seq": 82,
+      "nick": "라이브죽순이",
+      "text": "와 142%라니 대박이다",
+      "ts": 1788404447.9974668,
+      "latency_ms": 1190,
+      "decision": "IGNORE",
+      "label": null,
+      "faq_id": null,
+      "strict": false,
+      "ignored_reason": "NOT_QUESTION"
+    },
+    {
+      "type": "user",
+      "nick": "살림왕",
+      "text": "지금 얼마 모였어요?",
+      "ts": 1788404455.6270247
+    },
+    {
+      "type": "result",
+      "for_seq": 84,
+      "nick": "살림왕",
+      "text": "지금 얼마 모였어요?",
+      "ts": 1788404455.6270247,
+      "latency_ms": 1197,
+      "decision": "ANSWER",
+      "label": "FUNDING_PROCESS",
+      "faq_id": "faq_fp_005",
+      "strict": false,
+      "ignored_reason": null
+    },
+    {
+      "type": "bot",
+      "text": "목표 금액은 3,000만 원이며, 현재 4,260만 원이 모였습니다.",
+      "ts": 1788404456.8247647,
+      "reply_nick": "살림왕",
+      "reply_text": "지금 얼마 모였어요?",
+      "decision": "ANSWER",
+      "label": "FUNDING_PROCESS",
+      "faq_id": "faq_fp_005",
+      "latency_ms": 1197
+    },
+    {
+      "type": "user",
+      "nick": "댕댕이집사",
+      "text": "계좌이체도 되나요?",
+      "ts": 1788404463.406739
+    },
+    {
+      "type": "result",
+      "for_seq": 87,
+      "nick": "댕댕이집사",
+      "text": "계좌이체도 되나요?",
+      "ts": 1788404463.406739,
+      "latency_ms": 1176,
+      "decision": "ANSWER",
+      "label": "PAYMENT",
+      "faq_id": "faq_pay_002",
+      "strict": true,
+      "ignored_reason": null
+    },
+    {
+      "type": "bot",
+      "text": "결제 수단은 신용·체크카드, 계좌 간편결제를 지원합니다. 무통장 입금은 지원하지 않습니다.",
+      "ts": 1788404464.5840585,
+      "reply_nick": "댕댕이집사",
+      "reply_text": "계좌이체도 되나요?",
+      "decision": "ANSWER",
+      "label": "PAYMENT",
+      "faq_id": "faq_pay_002",
+      "latency_ms": 1176
+    },
+    {
+      "type": "user",
+      "nick": "먼지없는집",
+      "text": "지금 신청하면 바로 결제되는 거예요?",
+      "ts": 1788404468.1291232
+    },
+    {
+      "type": "result",
+      "for_seq": 90,
+      "nick": "먼지없는집",
+      "text": "지금 신청하면 바로 결제되는 거예요?",
+      "ts": 1788404468.1291232,
+      "latency_ms": 1065,
+      "decision": "ANSWER",
+      "label": "PAYMENT",
+      "faq_id": "faq_pay_001",
+      "strict": true,
+      "ignored_reason": null
+    },
+    {
+      "type": "bot",
+      "text": "지금 신청하셔도 바로 결제되지 않습니다. 펀딩이 마감된 뒤 2026년 9월 16일에 일괄 결제됩니다.",
+      "ts": 1788404469.193625,
+      "reply_nick": "먼지없는집",
+      "reply_text": "지금 신청하면 바로 결제되는 거예요?",
+      "decision": "ANSWER",
+      "label": "PAYMENT",
+      "faq_id": "faq_pay_001",
+      "latency_ms": 1065
+    },
+    {
+      "type": "user",
+      "nick": "집순이",
+      "text": "쿠폰 어디에 넣어요?",
+      "ts": 1788404475.474072
+    },
+    {
+      "type": "result",
+      "for_seq": 93,
+      "nick": "집순이",
+      "text": "쿠폰 어디에 넣어요?",
+      "ts": 1788404475.474072,
+      "latency_ms": 1251,
+      "decision": "ANSWER",
+      "label": "EVENT_COUPON",
+      "faq_id": "faq_ev_001",
+      "strict": false,
+      "ignored_reason": null
+    },
+    {
+      "type": "bot",
+      "text": "쿠폰은 펀딩 신청 마지막 단계의 쿠폰 적용란에서 사용하실 수 있습니다.",
+      "ts": 1788404476.7246578,
+      "reply_nick": "집순이",
+      "reply_text": "쿠폰 어디에 넣어요?",
+      "decision": "ANSWER",
+      "label": "EVENT_COUPON",
+      "faq_id": "faq_ev_001",
+      "latency_ms": 1251
+    },
+    {
+      "type": "user",
+      "nick": "쇼핑홀릭",
+      "text": "얼리버드 아직 남았어요?",
+      "ts": 1788404482.3311114
+    },
+    {
+      "type": "result",
+      "for_seq": 96,
+      "nick": "쇼핑홀릭",
+      "text": "얼리버드 아직 남았어요?",
+      "ts": 1788404482.3311114,
+      "latency_ms": 1218,
+      "decision": "ANSWER",
+      "label": "REWARD_OPTION",
+      "faq_id": "faq_rw_002",
+      "strict": false,
+      "ignored_reason": null
+    },
+    {
+      "type": "bot",
+      "text": "얼리버드는 50개 한정이며 현재 6개 남았습니다. 소진되면 자동으로 마감됩니다.",
+      "ts": 1788404483.5481029,
+      "reply_nick": "쇼핑홀릭",
+      "reply_text": "얼리버드 아직 남았어요?",
+      "decision": "ANSWER",
+      "label": "REWARD_OPTION",
+      "faq_id": "faq_rw_002",
+      "latency_ms": 1218
+    },
+    {
+      "type": "user",
+      "nick": "댕댕이집사",
+      "text": "저번에 산 것보다 좋아 보이네요",
+      "ts": 1788404488.8663578
+    },
+    {
+      "type": "result",
+      "for_seq": 99,
+      "nick": "댕댕이집사",
+      "text": "저번에 산 것보다 좋아 보이네요",
+      "ts": 1788404488.8663578,
+      "latency_ms": 1235,
+      "decision": "IGNORE",
+      "label": null,
+      "faq_id": null,
+      "strict": false,
+      "ignored_reason": "NOT_QUESTION"
+    },
+    {
+      "type": "user",
+      "nick": "라이브죽순이",
+      "text": "구성품 뭐가 달라요?",
+      "ts": 1788404494.774163
+    },
+    {
+      "type": "result",
+      "for_seq": 101,
+      "nick": "라이브죽순이",
+      "text": "구성품 뭐가 달라요?",
+      "ts": 1788404494.774163,
+      "latency_ms": 1169,
+      "decision": "ANSWER",
+      "label": "REWARD_OPTION",
+      "faq_id": "faq_rw_005",
+      "strict": false,
+      "ignored_reason": null
+    },
+    {
+      "type": "bot",
+      "text": "리워드마다 구성품이 다르며, 자세한 내용은 프로젝트 페이지 리워드 항목에서 확인하실 수 있습니다.",
+      "ts": 1788404495.942583,
+      "reply_nick": "라이브죽순이",
+      "reply_text": "구성품 뭐가 달라요?",
+      "decision": "ANSWER",
+      "label": "REWARD_OPTION",
+      "faq_id": "faq_rw_005",
+      "latency_ms": 1169
+    },
+    {
+      "type": "user",
+      "nick": "월급루팡",
+      "text": "옵션 나중에 바꿀 수 있나요?",
+      "ts": 1788404502.4329145
+    },
+    {
+      "type": "result",
+      "for_seq": 104,
+      "nick": "월급루팡",
+      "text": "옵션 나중에 바꿀 수 있나요?",
+      "ts": 1788404502.4329145,
+      "latency_ms": 1037,
+      "decision": "ANSWER",
+      "label": "REWARD_OPTION",
+      "faq_id": "faq_rw_001",
+      "strict": false,
+      "ignored_reason": null
+    },
+    {
+      "type": "bot",
+      "text": "리워드 옵션은 펀딩 마감 전까지 자유롭게 변경하실 수 있습니다.",
+      "ts": 1788404503.470348,
+      "reply_nick": "월급루팡",
+      "reply_text": "옵션 나중에 바꿀 수 있나요?",
+      "decision": "ANSWER",
+      "label": "REWARD_OPTION",
+      "faq_id": "faq_rw_001",
+      "latency_ms": 1037
+    },
+    {
+      "type": "user",
+      "nick": "새벽배송러",
+      "text": "지난번에 산 거 취소해주세요",
+      "ts": 1788404507.3634017
+    },
+    {
+      "type": "result",
+      "for_seq": 107,
+      "nick": "새벽배송러",
+      "text": "지난번에 산 거 취소해주세요",
+      "ts": 1788404507.3634017,
+      "latency_ms": 1130,
+      "decision": "IGNORE",
+      "label": null,
+      "faq_id": null,
+      "strict": false,
+      "ignored_reason": "PERSONAL_INQUIRY"
+    },
+    {
+      "type": "user",
+      "nick": "새벽배송러",
+      "text": "군부대도 배송 되나요?",
+      "ts": 1788404512.9255867
+    },
+    {
+      "type": "result",
+      "for_seq": 109,
+      "nick": "새벽배송러",
+      "text": "군부대도 배송 되나요?",
+      "ts": 1788404512.9255867,
+      "latency_ms": 1007,
+      "decision": "UNANSWERABLE",
+      "label": null,
+      "faq_id": null,
+      "strict": false,
+      "ignored_reason": null
+    },
+    {
+      "type": "alert",
+      "ts": 1788404513.9330227,
+      "nick": "새벽배송러",
+      "text": "군부대도 배송 되나요?"
+    },
+    {
+      "type": "user",
+      "nick": "혼수준비중",
+      "text": "당일배송 되나요?",
+      "ts": 1788404520.5789618
+    },
+    {
+      "type": "result",
+      "for_seq": 112,
+      "nick": "혼수준비중",
+      "text": "당일배송 되나요?",
+      "ts": 1788404520.5789618,
+      "latency_ms": 1103,
+      "decision": "UNANSWERABLE",
+      "label": null,
+      "faq_id": null,
+      "strict": false,
+      "ignored_reason": null
+    },
+    {
+      "type": "alert",
+      "ts": 1788404521.6813889,
+      "nick": "혼수준비중",
+      "text": "당일배송 되나요?"
+    },
+    {
+      "type": "user",
+      "nick": "새벽배송러",
+      "text": "언제쯤 받아볼 수 있나요",
+      "ts": 1788404529.9893959
+    },
+    {
+      "type": "result",
+      "for_seq": 115,
+      "nick": "새벽배송러",
+      "text": "언제쯤 받아볼 수 있나요",
+      "ts": 1788404529.9893959,
+      "latency_ms": 1135,
+      "decision": "ANSWER",
+      "label": "DELIVERY_POLICY",
+      "faq_id": "faq_dl_001",
+      "strict": true,
+      "ignored_reason": null
+    },
+    {
+      "type": "bot",
+      "text": "배송은 펀딩 종료 후 2주 이내인 2026년 9월 30일부터 순차 발송되며, 10월 10일까지 발송이 완료됩니다.",
+      "ts": 1788404531.1230636,
+      "reply_nick": "새벽배송러",
+      "reply_text": "언제쯤 받아볼 수 있나요",
+      "decision": "ANSWER",
+      "label": "DELIVERY_POLICY",
+      "faq_id": "faq_dl_001",
+      "latency_ms": 1135
+    },
+    {
+      "type": "user",
+      "nick": "청소는귀찮아",
+      "text": "제주도 배송비 추가돼요?",
+      "ts": 1788404537.3214233
+    },
+    {
+      "type": "result",
+      "for_seq": 118,
+      "nick": "청소는귀찮아",
+      "text": "제주도 배송비 추가돼요?",
+      "ts": 1788404537.3214233,
+      "latency_ms": 1152,
+      "decision": "ANSWER",
+      "label": "DELIVERY_POLICY",
+      "faq_id": "faq_dl_002",
+      "strict": true,
+      "ignored_reason": null
+    },
+    {
+      "type": "bot",
+      "text": "배송비는 무료입니다. 단 제주 및 도서산간 지역은 3,000원이 추가됩니다.",
+      "ts": 1788404538.4744895,
+      "reply_nick": "청소는귀찮아",
+      "reply_text": "제주도 배송비 추가돼요?",
+      "decision": "ANSWER",
+      "label": "DELIVERY_POLICY",
+      "faq_id": "faq_dl_002",
+      "latency_ms": 1152
+    },
+    {
+      "type": "user",
+      "nick": "쇼핑홀릭",
+      "text": "AS센터는 어디에 있어요?",
+      "ts": 1788404546.260242
+    },
+    {
+      "type": "result",
+      "for_seq": 121,
+      "nick": "쇼핑홀릭",
+      "text": "AS센터는 어디에 있어요?",
+      "ts": 1788404546.260242,
+      "latency_ms": 1167,
+      "decision": "UNANSWERABLE",
+      "label": null,
+      "faq_id": null,
+      "strict": false,
+      "ignored_reason": null
+    },
+    {
+      "type": "alert",
+      "ts": 1788404547.4274974,
+      "nick": "쇼핑홀릭",
+      "text": "AS센터는 어디에 있어요?"
+    },
+    {
+      "type": "user",
+      "nick": "미니멀리스트",
+      "text": "현금영수증 발급돼요?",
+      "ts": 1788404553.4817576
+    },
+    {
+      "type": "result",
+      "for_seq": 124,
+      "nick": "미니멀리스트",
+      "text": "현금영수증 발급돼요?",
+      "ts": 1788404553.4817576,
+      "latency_ms": 1185,
+      "decision": "UNANSWERABLE",
+      "label": null,
+      "faq_id": null,
+      "strict": false,
+      "ignored_reason": null
+    },
+    {
+      "type": "alert",
+      "ts": 1788404554.6664405,
+      "nick": "미니멀리스트",
+      "text": "현금영수증 발급돼요?"
+    },
+    {
+      "type": "user",
+      "nick": "청소는귀찮아",
+      "text": "중간에 취소 가능해요?",
+      "ts": 1788404560.8944652
+    },
+    {
+      "type": "result",
+      "for_seq": 127,
+      "nick": "청소는귀찮아",
+      "text": "중간에 취소 가능해요?",
+      "ts": 1788404560.8944652,
+      "latency_ms": 1232,
+      "decision": "ANSWER",
+      "label": "REFUND_CANCEL",
+      "faq_id": "faq_rf_001",
+      "strict": true,
+      "ignored_reason": null
+    },
+    {
+      "type": "bot",
+      "text": "펀딩 마감 전에는 언제든 취소할 수 있으며, 결제 전이므로 별도 환불 절차가 없습니다.",
+      "ts": 1788404562.125618,
+      "reply_nick": "청소는귀찮아",
+      "reply_text": "중간에 취소 가능해요?",
+      "decision": "ANSWER",
+      "label": "REFUND_CANCEL",
+      "faq_id": "faq_rf_001",
+      "latency_ms": 1232
+    },
+    {
+      "type": "user",
+      "nick": "청소는귀찮아",
+      "text": "단순변심 반품비 있어요?",
+      "ts": 1788404567.9332008
+    },
+    {
+      "type": "result",
+      "for_seq": 130,
+      "nick": "청소는귀찮아",
+      "text": "단순변심 반품비 있어요?",
+      "ts": 1788404567.9332008,
+      "latency_ms": 1149,
+      "decision": "ANSWER",
+      "label": "REFUND_CANCEL",
+      "faq_id": "faq_rf_004",
+      "strict": true,
+      "ignored_reason": null
+    },
+    {
+      "type": "bot",
+      "text": "단순 변심으로 반품하는 경우 왕복 배송비 6,000원이 발생합니다.",
+      "ts": 1788404569.0815325,
+      "reply_nick": "청소는귀찮아",
+      "reply_text": "단순변심 반품비 있어요?",
+      "decision": "ANSWER",
+      "label": "REFUND_CANCEL",
+      "faq_id": "faq_rf_004",
+      "latency_ms": 1149
+    },
+    {
+      "type": "user",
+      "nick": "먼지없는집",
+      "text": "선물 포장 가능한가요?",
+      "ts": 1788404573.9000766
+    },
+    {
+      "type": "result",
+      "for_seq": 133,
+      "nick": "먼지없는집",
+      "text": "선물 포장 가능한가요?",
+      "ts": 1788404573.9000766,
+      "latency_ms": 1220,
+      "decision": "UNANSWERABLE",
+      "label": null,
+      "faq_id": null,
+      "strict": false,
+      "ignored_reason": null
+    },
+    {
+      "type": "alert",
+      "ts": 1788404575.1196027,
+      "nick": "먼지없는집",
+      "text": "선물 포장 가능한가요?"
+    },
+    {
+      "type": "user",
+      "nick": "라이브죽순이",
+      "text": "해외배송 되나요?",
+      "ts": 1788404579.6006627
+    },
+    {
+      "type": "result",
+      "for_seq": 136,
+      "nick": "라이브죽순이",
+      "text": "해외배송 되나요?",
+      "ts": 1788404579.6006627,
+      "latency_ms": 1145,
+      "decision": "ANSWER",
+      "label": "DELIVERY_POLICY",
+      "faq_id": "faq_dl_005",
+      "strict": true,
+      "ignored_reason": null
+    },
+    {
+      "type": "bot",
+      "text": "해외 배송은 지원하지 않습니다.",
+      "ts": 1788404580.7460225,
+      "reply_nick": "라이브죽순이",
+      "reply_text": "해외배송 되나요?",
+      "decision": "ANSWER",
+      "label": "DELIVERY_POLICY",
+      "faq_id": "faq_dl_005",
+      "latency_ms": 1145
+    },
+    {
+      "type": "user",
+      "nick": "쇼핑홀릭",
+      "text": "제 주문번호 좀 확인해주세요",
+      "ts": 1788404586.7975657
+    },
+    {
+      "type": "result",
+      "for_seq": 139,
+      "nick": "쇼핑홀릭",
+      "text": "제 주문번호 좀 확인해주세요",
+      "ts": 1788404586.7975657,
+      "latency_ms": 1214,
+      "decision": "IGNORE",
+      "label": null,
+      "faq_id": null,
+      "strict": false,
+      "ignored_reason": "PERSONAL_INQUIRY"
+    },
+    {
+      "type": "user",
+      "nick": "먼지없는집",
+      "text": "배송지 나중에 바꿔도 돼요?",
+      "ts": 1788404592.1110046
+    },
+    {
+      "type": "result",
+      "for_seq": 141,
+      "nick": "먼지없는집",
+      "text": "배송지 나중에 바꿔도 돼요?",
+      "ts": 1788404592.1110046,
+      "latency_ms": 1037,
+      "decision": "ANSWER",
+      "label": "DELIVERY_POLICY",
+      "faq_id": "faq_dl_003",
+      "strict": true,
+      "ignored_reason": null
+    },
+    {
+      "type": "bot",
+      "text": "배송지 정보는 펀딩 종료 후 3일 이내(9월 18일까지) 입력해 주셔야 합니다.",
+      "ts": 1788404593.1483028,
+      "reply_nick": "먼지없는집",
+      "reply_text": "배송지 나중에 바꿔도 돼요?",
+      "decision": "ANSWER",
+      "label": "DELIVERY_POLICY",
+      "faq_id": "faq_dl_003",
+      "latency_ms": 1037
+    },
+    {
+      "type": "user",
+      "nick": "청소는귀찮아",
+      "text": "설명 너무 잘하시네요",
+      "ts": 1788404597.9652162
+    },
+    {
+      "type": "result",
+      "for_seq": 144,
+      "nick": "청소는귀찮아",
+      "text": "설명 너무 잘하시네요",
+      "ts": 1788404597.9652162,
+      "latency_ms": 1021,
+      "decision": "IGNORE",
+      "label": null,
+      "faq_id": null,
+      "strict": false,
+      "ignored_reason": "NOT_QUESTION"
+    },
+    {
+      "type": "user",
+      "nick": "미니멀리스트",
+      "text": "받고 나서 반품되나요?",
+      "ts": 1788404606.4931486
+    },
+    {
+      "type": "result",
+      "for_seq": 146,
+      "nick": "미니멀리스트",
+      "text": "받고 나서 반품되나요?",
+      "ts": 1788404606.4931486,
+      "latency_ms": 1255,
+      "decision": "ANSWER",
+      "label": "REFUND_CANCEL",
+      "faq_id": "faq_rf_003",
+      "strict": true,
+      "ignored_reason": null
+    },
+    {
+      "type": "bot",
+      "text": "상품 발송이 시작된 뒤에는 단순 변심에 의한 취소가 제한되며, 수령 후 7일 이내 청약철회만 가능합니다.",
+      "ts": 1788404607.7475078,
+      "reply_nick": "미니멀리스트",
+      "reply_text": "받고 나서 반품되나요?",
+      "decision": "ANSWER",
+      "label": "REFUND_CANCEL",
+      "faq_id": "faq_rf_003",
+      "latency_ms": 1255
+    },
+    {
+      "type": "user",
+      "nick": "미니멀리스트",
+      "text": "배송은 언제부터 시작돼요?",
+      "ts": 1788404612.9402814
+    },
+    {
+      "type": "result",
+      "for_seq": 149,
+      "nick": "미니멀리스트",
+      "text": "배송은 언제부터 시작돼요?",
+      "ts": 1788404612.9402814,
+      "latency_ms": 1178,
+      "decision": "ANSWER",
+      "label": "DELIVERY_POLICY",
+      "faq_id": "faq_dl_001",
+      "strict": true,
+      "ignored_reason": null
+    },
+    {
+      "type": "bot",
+      "text": "배송은 펀딩 종료 후 2주 이내인 2026년 9월 30일부터 순차 발송되며, 10월 10일까지 발송이 완료됩니다.",
+      "ts": 1788404614.1192894,
+      "reply_nick": "미니멀리스트",
+      "reply_text": "배송은 언제부터 시작돼요?",
+      "decision": "ANSWER",
+      "label": "DELIVERY_POLICY",
+      "faq_id": "faq_dl_001",
+      "latency_ms": 1178
+    },
+    {
+      "type": "user",
+      "nick": "먼지없는집",
+      "text": "필터는 얼마나 자주 갈아요?",
+      "ts": 1788404620.9104147
+    },
+    {
+      "type": "result",
+      "for_seq": 152,
+      "nick": "먼지없는집",
+      "text": "필터는 얼마나 자주 갈아요?",
+      "ts": 1788404620.9104147,
+      "latency_ms": 1176,
+      "decision": "UNANSWERABLE",
+      "label": null,
+      "faq_id": null,
+      "strict": false,
+      "ignored_reason": null
+    },
+    {
+      "type": "alert",
+      "ts": 1788404622.0880873,
+      "nick": "먼지없는집",
+      "text": "필터는 얼마나 자주 갈아요?"
+    },
+    {
+      "type": "user",
+      "nick": "먼지없는집",
+      "text": "마감 며칠 남았어요?",
+      "ts": 1788404628.2207985
+    },
+    {
+      "type": "result",
+      "for_seq": 155,
+      "nick": "먼지없는집",
+      "text": "마감 며칠 남았어요?",
+      "ts": 1788404628.2207985,
+      "latency_ms": 1107,
+      "decision": "ANSWER",
+      "label": "FUNDING_PROCESS",
+      "faq_id": "faq_fp_001",
+      "strict": false,
+      "ignored_reason": null
+    },
+    {
+      "type": "bot",
+      "text": "이 프로젝트는 2026년 9월 15일 23시 59분에 마감됩니다.",
+      "ts": 1788404629.3280573,
+      "reply_nick": "먼지없는집",
+      "reply_text": "마감 며칠 남았어요?",
+      "decision": "ANSWER",
+      "label": "FUNDING_PROCESS",
+      "faq_id": "faq_fp_001",
+      "latency_ms": 1107
+    },
+    {
+      "type": "user",
+      "nick": "살림왕",
+      "text": "오늘 방송 잘 봤어요~",
+      "ts": 1788404633.45044
+    },
+    {
+      "type": "result",
+      "for_seq": 158,
+      "nick": "살림왕",
+      "text": "오늘 방송 잘 봤어요~",
+      "ts": 1788404633.45044,
+      "latency_ms": 1007,
+      "decision": "IGNORE",
+      "label": null,
+      "faq_id": null,
+      "strict": false,
+      "ignored_reason": "SMALLTALK"
+    },
+    {
+      "type": "user",
+      "nick": "라이브죽순이",
+      "text": "얼리버드 몇 개 남았어요?",
+      "ts": 1788404640.4785063
+    },
+    {
+      "type": "result",
+      "for_seq": 160,
+      "nick": "라이브죽순이",
+      "text": "얼리버드 몇 개 남았어요?",
+      "ts": 1788404640.4785063,
+      "latency_ms": 1234,
+      "decision": "ANSWER",
+      "label": "REWARD_OPTION",
+      "faq_id": "faq_rw_002",
+      "strict": false,
+      "ignored_reason": null
+    },
+    {
+      "type": "bot",
+      "text": "얼리버드는 50개 한정이며 현재 6개 남았습니다. 소진되면 자동으로 마감됩니다.",
+      "ts": 1788404641.712897,
+      "reply_nick": "라이브죽순이",
+      "reply_text": "얼리버드 몇 개 남았어요?",
+      "decision": "ANSWER",
+      "label": "REWARD_OPTION",
+      "faq_id": "faq_rw_002",
+      "latency_ms": 1234
+    },
+    {
+      "type": "user",
+      "nick": "라이브죽순이",
+      "text": "다음 방송은 언제예요?",
+      "ts": 1788404645.381931
+    },
+    {
+      "type": "result",
+      "for_seq": 163,
+      "nick": "라이브죽순이",
+      "text": "다음 방송은 언제예요?",
+      "ts": 1788404645.381931,
+      "latency_ms": 1064,
+      "decision": "ANSWER",
+      "label": "BROADCAST_INFO",
+      "faq_id": "faq_bc_004",
+      "strict": false,
+      "ignored_reason": null
+    },
+    {
+      "type": "bot",
+      "text": "다음 방송은 9월 14일 20시, 펀딩 마감 전 마지막 라이브입니다.",
+      "ts": 1788404646.446426,
+      "reply_nick": "라이브죽순이",
+      "reply_text": "다음 방송은 언제예요?",
+      "decision": "ANSWER",
+      "label": "BROADCAST_INFO",
+      "faq_id": "faq_bc_004",
+      "latency_ms": 1064
+    },
+    {
+      "type": "user",
+      "nick": "미니멀리스트",
+      "text": "저도 질렀습니다",
+      "ts": 1788404651.0906875
+    },
+    {
+      "type": "result",
+      "for_seq": 166,
+      "nick": "미니멀리스트",
+      "text": "저도 질렀습니다",
+      "ts": 1788404651.0906875,
+      "latency_ms": 979,
+      "decision": "IGNORE",
+      "label": null,
+      "faq_id": null,
+      "strict": false,
+      "ignored_reason": "NOT_QUESTION"
+    },
+    {
+      "type": "user",
+      "nick": "라이브죽순이",
+      "text": "방금 신청했어요!",
+      "ts": 1788404660.45466
+    },
+    {
+      "type": "result",
+      "for_seq": 168,
+      "nick": "라이브죽순이",
+      "text": "방금 신청했어요!",
+      "ts": 1788404660.45466,
+      "latency_ms": 1085,
+      "decision": "IGNORE",
+      "label": null,
+      "faq_id": null,
+      "strict": false,
+      "ignored_reason": "SMALLTALK"
+    },
+    {
+      "type": "user",
+      "nick": "먼지없는집",
+      "text": "다시보기 언제까지 볼 수 있어요?",
+      "ts": 1788404665.8193805
+    },
+    {
+      "type": "result",
+      "for_seq": 170,
+      "nick": "먼지없는집",
+      "text": "다시보기 언제까지 볼 수 있어요?",
+      "ts": 1788404665.8193805,
+      "latency_ms": 1147,
+      "decision": "ANSWER",
+      "label": "BROADCAST_INFO",
+      "faq_id": "faq_bc_003",
+      "strict": false,
+      "ignored_reason": null
+    },
+    {
+      "type": "bot",
+      "text": "다시보기는 펀딩 종료 후 30일간 시청 가능합니다.",
+      "ts": 1788404666.9668388,
+      "reply_nick": "먼지없는집",
+      "reply_text": "다시보기 언제까지 볼 수 있어요?",
+      "decision": "ANSWER",
+      "label": "BROADCAST_INFO",
+      "faq_id": "faq_bc_003",
+      "latency_ms": 1147
+    },
+    {
+      "type": "user",
+      "nick": "혼수준비중",
+      "text": "고민되네요 ㅠㅠ",
+      "ts": 1788404675.0147078
+    },
+    {
+      "type": "result",
+      "for_seq": 173,
+      "nick": "혼수준비중",
+      "text": "고민되네요 ㅠㅠ",
+      "ts": 1788404675.0147078,
+      "latency_ms": 1298,
+      "decision": "IGNORE",
+      "label": null,
+      "faq_id": null,
+      "strict": false,
+      "ignored_reason": "NOT_QUESTION"
+    },
+    {
+      "type": "user",
+      "nick": "먼지없는집",
+      "text": "지금 사는 게 이득이겠죠?",
+      "ts": 1788404681.9760487
+    },
+    {
+      "type": "result",
+      "for_seq": 175,
+      "nick": "먼지없는집",
+      "text": "지금 사는 게 이득이겠죠?",
+      "ts": 1788404681.9760487,
+      "latency_ms": 1089,
+      "decision": "UNANSWERABLE",
+      "label": null,
+      "faq_id": null,
+      "strict": false,
+      "ignored_reason": null
+    },
+    {
+      "type": "alert",
+      "ts": 1788404683.0660024,
+      "nick": "먼지없는집",
+      "text": "지금 사는 게 이득이겠죠?"
+    },
+    {
+      "type": "user",
+      "nick": "바리",
+      "text": "펀딩 얼마에요?",
+      "ts": 1788404685.7077503
+    },
+    {
+      "type": "result",
+      "for_seq": 178,
+      "nick": "바리",
+      "text": "펀딩 얼마에요?",
+      "ts": 1788404685.7077503,
+      "latency_ms": 1190,
+      "decision": "ANSWER",
+      "label": "REWARD_OPTION",
+      "faq_id": "faq_rw_004",
+      "strict": false,
+      "ignored_reason": null
+    },
+    {
+      "type": "bot",
+      "text": "리워드 구성은 얼리버드 389,000원, 기본 429,000원, 풀패키지 489,000원 세 가지입니다.",
+      "ts": 1788404686.8985431,
+      "reply_nick": "바리",
+      "reply_text": "펀딩 얼마에요?",
+      "decision": "ANSWER",
+      "label": "REWARD_OPTION",
+      "faq_id": "faq_rw_004",
+      "latency_ms": 1190
+    },
+    {
+      "type": "user",
+      "nick": "청소는귀찮아",
+      "text": "결제는 언제 되는 거예요?",
+      "ts": 1788404690.1430123
+    },
+    {
+      "type": "user",
+      "nick": "바리",
+      "text": "어떻게 결제함???",
+      "ts": 1788404690.7730758
+    },
+    {
+      "type": "result",
+      "for_seq": 181,
+      "nick": "청소는귀찮아",
+      "text": "결제는 언제 되는 거예요?",
+      "ts": 1788404690.1430123,
+      "latency_ms": 1089,
+      "decision": "ANSWER",
+      "label": "PAYMENT",
+      "faq_id": "faq_pay_001",
+      "strict": true,
+      "ignored_reason": null
+    },
+    {
+      "type": "bot",
+      "text": "지금 신청하셔도 바로 결제되지 않습니다. 펀딩이 마감된 뒤 2026년 9월 16일에 일괄 결제됩니다.",
+      "ts": 1788404691.2316892,
+      "reply_nick": "청소는귀찮아",
+      "reply_text": "결제는 언제 되는 거예요?",
+      "decision": "ANSWER",
+      "label": "PAYMENT",
+      "faq_id": "faq_pay_001",
+      "latency_ms": 1089
+    },
+    {
+      "type": "result",
+      "for_seq": 182,
+      "nick": "바리",
+      "text": "어떻게 결제함???",
+      "ts": 1788404690.7730758,
+      "latency_ms": 1160,
+      "decision": "ANSWER",
+      "label": "PAYMENT",
+      "faq_id": "faq_pay_002",
+      "strict": true,
+      "ignored_reason": null
+    },
+    {
+      "type": "bot",
+      "text": "결제 수단은 신용·체크카드, 계좌 간편결제를 지원합니다. 무통장 입금은 지원하지 않습니다.",
+      "ts": 1788404691.933195,
+      "reply_nick": "바리",
+      "reply_text": "어떻게 결제함???",
+      "decision": "ANSWER",
+      "label": "PAYMENT",
+      "faq_id": "faq_pay_002",
+      "latency_ms": 1160
+    },
+    {
+      "type": "user",
+      "nick": "구름토끼",
+      "text": "감사합니다!",
+      "ts": 1788404696.8603933
+    },
+    {
+      "type": "result",
+      "for_seq": 187,
+      "nick": "구름토끼",
+      "text": "감사합니다!",
+      "ts": 1788404696.8603933,
+      "latency_ms": 925,
+      "decision": "IGNORE",
+      "label": null,
+      "faq_id": null,
+      "strict": false,
+      "ignored_reason": "SMALLTALK"
+    },
+    {
+      "type": "user",
+      "nick": "살림왕",
+      "text": "알림 신청 어디서 해요?",
+      "ts": 1788404705.7440696
+    },
+    {
+      "type": "result",
+      "for_seq": 189,
+      "nick": "살림왕",
+      "text": "알림 신청 어디서 해요?",
+      "ts": 1788404705.7440696,
+      "latency_ms": 1415,
+      "decision": "ANSWER",
+      "label": "ACCOUNT_APP",
+      "faq_id": "faq_ac_003",
+      "strict": false,
+      "ignored_reason": null
+    },
+    {
+      "type": "bot",
+      "text": "프로젝트 페이지의 알림 신청 버튼을 누르시면 방송 시작과 마감 임박 시 알림을 받으실 수 있습니다.",
+      "ts": 1788404707.1601565,
+      "reply_nick": "살림왕",
+      "reply_text": "알림 신청 어디서 해요?",
+      "decision": "ANSWER",
+      "label": "ACCOUNT_APP",
+      "faq_id": "faq_ac_003",
+      "latency_ms": 1415
+    }
+  ]
+}

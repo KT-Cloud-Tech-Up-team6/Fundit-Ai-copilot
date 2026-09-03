@@ -4,12 +4,12 @@ import time
 from collections import Counter
 from pathlib import Path
 
-from interest_tracker import InterestTracker
-from rag_answer import answer_question
-from unanswered_analyzer import analyze_unanswered
+from parts.p_part.interest_tracker import InterestTracker
+from parts.p_part.rag_answer import answer_question
+from parts.p_part.unanswered_analyzer import analyze_unanswered
 
 
-DEFAULT_DATASET = "p_video_expected_questions_100.json"
+DEFAULT_DATASET = str(Path(__file__).parent / "data" / "p_video_expected_questions_100.json")
 
 RESULT_PATH = "mvp_replay_results.json"
 SUMMARY_PATH = "mvp_replay_summary.json"

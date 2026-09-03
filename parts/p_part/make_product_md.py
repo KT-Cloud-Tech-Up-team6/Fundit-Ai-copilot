@@ -2,8 +2,8 @@ import json
 from pathlib import Path
 
 
-INPUT_FILE = Path("product_5454434.json")
-OUTPUT_FILE = Path("product_5454434.md")
+INPUT_FILE = Path(__file__).parent / "data" / "product_5454434.json"
+OUTPUT_FILE = Path(__file__).parent / "data" / "product_5454434.md"
 
 
 with open(INPUT_FILE, "r", encoding="utf-8") as f:
