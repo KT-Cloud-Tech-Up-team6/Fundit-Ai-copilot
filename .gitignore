@@ -1,2 +1,12 @@
+.env
 __pycache__/
+*.pyc
+.venv/
+venv/
+eval/results/
+webtest/uploads/
 unanswered_interest.json
+*.log
+*.mp4
+*.mov
+*.webm

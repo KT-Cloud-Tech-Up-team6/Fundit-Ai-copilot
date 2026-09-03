@@ -1,0 +1,346 @@
+{
+  "platform_faq": [
+    {
+      "faq_id": "faq_bc_001",
+      "label": "BROADCAST_INFO",
+      "question_variants": ["방송 몇 시까지 해요?", "방송 언제 끝나요", "몇시까지함?", "오늘 방송 시간", "방송 끝나는 시간"],
+      "answer_text": "오늘 방송은 {end_time}에 종료됩니다.",
+      "slots": ["end_time"],
+      "strict": false,
+      "source": "방송 운영 정책 2조"
+    },
+    {
+      "faq_id": "faq_bc_002",
+      "label": "BROADCAST_INFO",
+      "question_variants": ["다시보기 되나요?", "다시 보여주나요?", "놓쳤는데 다시 볼 수 있어요?", "vod 있어요?", "재방송 해요?", "다시보기됨?"],
+      "answer_text": "이 방송은 다시보기로 제공됩니다. 방송 종료 약 30분 뒤 프로젝트 페이지에서 보실 수 있습니다.",
+      "slots": [],
+      "strict": false,
+      "source": "방송 운영 정책 5조"
+    },
+    {
+      "faq_id": "faq_bc_003",
+      "label": "BROADCAST_INFO",
+      "question_variants": ["다시보기 언제까지 볼 수 있어요?", "vod 기간", "다시보기 유효기간"],
+      "answer_text": "다시보기는 펀딩 종료 후 30일간 시청 가능합니다.",
+      "slots": [],
+      "strict": false,
+      "source": "방송 운영 정책 5조"
+    },
+    {
+      "faq_id": "faq_bc_004",
+      "label": "BROADCAST_INFO",
+      "question_variants": ["다음 방송 언제예요?", "다음 라이브 일정", "또 언제 방송해요"],
+      "answer_text": "다음 방송은 9월 14일 20시, 펀딩 마감 전 마지막 라이브입니다.",
+      "slots": [],
+      "strict": false,
+      "source": "방송 운영 정책 3조"
+    },
+    {
+      "faq_id": "faq_bc_005",
+      "label": "BROADCAST_INFO",
+      "question_variants": ["놓친 장면 어떻게 봐요?", "특정 부분만 다시 보고 싶어요"],
+      "answer_text": "방송 중 놓친 장면은 다시보기의 타임라인 표시에서 바로 이동해 보실 수 있습니다.",
+      "slots": [],
+      "strict": false,
+      "source": "방송 운영 정책 5조"
+    },
+    {
+      "faq_id": "faq_fp_001",
+      "label": "FUNDING_PROCESS",
+      "question_variants": ["펀딩 언제 끝나요?", "마감 언제예요", "며칠 남았어요?", "언제까지 신청 가능해요", "며칠남았어요"],
+      "answer_text": "이 프로젝트는 {deadline}에 마감됩니다.",
+      "slots": ["deadline"],
+      "strict": false,
+      "source": "프로젝트 기본 정보"
+    },
+    {
+      "faq_id": "faq_fp_002",
+      "label": "FUNDING_PROCESS",
+      "question_variants": ["지금 몇 퍼센트예요?", "달성률 얼마나 됐어요", "목표 채웠어요?"],
+      "answer_text": "현재 목표 금액의 {achieved_rate}%를 달성했습니다. 목표를 이미 넘겼기 때문에 펀딩은 확정 진행됩니다.",
+      "slots": ["achieved_rate"],
+      "strict": false,
+      "source": "프로젝트 기본 정보"
+    },
+    {
+      "faq_id": "faq_fp_003",
+      "label": "FUNDING_PROCESS",
+      "question_variants": ["목표 못 채우면 어떻게 돼요?", "미달되면요?", "실패하면 돈 어떻게 돼요"],
+      "answer_text": "목표 금액을 채우지 못하면 펀딩은 진행되지 않으며, 결제도 이루어지지 않습니다.",
+      "slots": [],
+      "strict": true,
+      "source": "리워드형 펀딩 약관 3조"
+    },
+    {
+      "faq_id": "faq_fp_004",
+      "label": "FUNDING_PROCESS",
+      "question_variants": ["펀딩은 어떻게 진행돼요?", "신청하면 바로 확정인가요"],
+      "answer_text": "펀딩은 마감일까지 신청을 받은 뒤 일괄 처리됩니다. 마감 전까지는 언제든 신청·변경이 가능합니다.",
+      "slots": [],
+      "strict": false,
+      "source": "리워드형 펀딩 약관 2조"
+    },
+    {
+      "faq_id": "faq_fp_005",
+      "label": "FUNDING_PROCESS",
+      "question_variants": ["목표 금액이 얼마예요?", "지금 얼마 모였어요?"],
+      "answer_text": "목표 금액은 {target_amount}이며, 현재 {current_amount}이 모였습니다.",
+      "slots": ["target_amount", "current_amount"],
+      "strict": false,
+      "source": "프로젝트 기본 정보"
+    },
+    {
+      "faq_id": "faq_pay_001",
+      "label": "PAYMENT",
+      "question_variants": ["지금 바로 결제돼요?", "돈 언제 나가요?", "신청하면 바로 빠지나요?", "지금 바로 돈 나가요?"],
+      "answer_text": "지금 신청하셔도 바로 결제되지 않습니다. 펀딩이 마감된 뒤 {payment_date}에 일괄 결제됩니다.",
+      "slots": ["payment_date"],
+      "strict": true,
+      "source": "결제 정책 1조"
+    },
+    {
+      "faq_id": "faq_pay_002",
+      "label": "PAYMENT",
+      "question_variants": ["계좌이체 돼요?", "무통장 입금 가능해요?", "카드만 되나요", "계좌이체도 되나요?"],
+      "answer_text": "결제 수단은 신용·체크카드, 계좌 간편결제를 지원합니다. 무통장 입금은 지원하지 않습니다.",
+      "slots": [],
+      "strict": true,
+      "source": "결제 정책 2조"
+    },
+    {
+      "faq_id": "faq_pay_003",
+      "label": "PAYMENT",
+      "question_variants": ["결제 실패하면 어떻게 돼요?", "카드 한도 초과되면요?"],
+      "answer_text": "결제일에 카드 한도 초과 등으로 결제가 실패하면 3일간 매일 1회 재시도하며, 최종 실패 시 펀딩 신청이 자동 취소됩니다.",
+      "slots": [],
+      "strict": true,
+      "source": "결제 정책 3조"
+    },
+    {
+      "faq_id": "faq_pay_004",
+      "label": "PAYMENT",
+      "question_variants": ["카드 등록하면 바로 출금돼요?", "신청할 때 카드 정보만 넣는 거예요?"],
+      "answer_text": "신청 시 카드 정보만 등록되며 실제 출금은 결제일에 이루어집니다.",
+      "slots": [],
+      "strict": true,
+      "source": "결제 정책 1조"
+    },
+    {
+      "faq_id": "faq_pay_005",
+      "label": "PAYMENT",
+      "question_variants": ["할부 되나요?", "무이자 할부 몇 개월이에요?"],
+      "answer_text": "최대 9개월 무이자 할부를 지원합니다. (일부 카드사 제외)",
+      "slots": [],
+      "strict": false,
+      "source": "결제 정책 4조"
+    },
+    {
+      "faq_id": "faq_dl_001",
+      "label": "DELIVERY_POLICY",
+      "question_variants": ["언제 배송돼요?", "펀딩 끝나고 얼마 뒤에 와요?", "배송 언제 시작해요", "지금사면 언제옴"],
+      "answer_text": "배송은 펀딩 종료 후 2주 이내인 {shipping_start}부터 순차 발송되며, 10월 10일까지 발송이 완료됩니다.",
+      "slots": ["shipping_start"],
+      "strict": true,
+      "source": "배송 정책 1조"
+    },
+    {
+      "faq_id": "faq_dl_002",
+      "label": "DELIVERY_POLICY",
+      "question_variants": ["배송비 있어요?", "제주도 추가금 있나요?", "도서산간 배송비", "제주도 배송비 추가돼요?"],
+      "answer_text": "배송비는 무료입니다. 단 제주 및 도서산간 지역은 3,000원이 추가됩니다.",
+      "slots": [],
+      "strict": true,
+      "source": "배송 정책 3조"
+    },
+    {
+      "faq_id": "faq_dl_003",
+      "label": "DELIVERY_POLICY",
+      "question_variants": ["배송지 언제까지 입력해요?", "주소 나중에 넣어도 돼요?"],
+      "answer_text": "배송지 정보는 펀딩 종료 후 3일 이내(9월 18일까지) 입력해 주셔야 합니다.",
+      "slots": [],
+      "strict": true,
+      "source": "배송 정책 2조"
+    },
+    {
+      "faq_id": "faq_dl_004",
+      "label": "DELIVERY_POLICY",
+      "question_variants": ["송장번호 알려주나요?", "배송 조회 어떻게 해요?"],
+      "answer_text": "발송이 시작되면 등록하신 연락처로 송장번호가 안내됩니다.",
+      "slots": [],
+      "strict": false,
+      "source": "배송 정책 4조"
+    },
+    {
+      "faq_id": "faq_dl_005",
+      "label": "DELIVERY_POLICY",
+      "question_variants": ["해외 배송 되나요?", "외국으로 보낼 수 있어요?"],
+      "answer_text": "해외 배송은 지원하지 않습니다.",
+      "slots": [],
+      "strict": true,
+      "source": "배송 정책 5조"
+    },
+    {
+      "faq_id": "faq_rf_001",
+      "label": "REFUND_CANCEL",
+      "question_variants": ["중간에 취소돼요?", "취소 가능해요?", "마음 바뀌면 어떻게 해요", "취소됨?"],
+      "answer_text": "펀딩 마감 전에는 언제든 취소할 수 있으며, 결제 전이므로 별도 환불 절차가 없습니다.",
+      "slots": [],
+      "strict": true,
+      "source": "취소·환불 정책 1조"
+    },
+    {
+      "faq_id": "faq_rf_002",
+      "label": "REFUND_CANCEL",
+      "question_variants": ["결제 후에도 취소돼요?", "결제되고 나서 환불 가능해요?"],
+      "answer_text": "결제 완료 후에는 결제일로부터 7일 이내 취소 시 전액 환불됩니다.",
+      "slots": [],
+      "strict": true,
+      "source": "취소·환불 정책 2조"
+    },
+    {
+      "faq_id": "faq_rf_003",
+      "label": "REFUND_CANCEL",
+      "question_variants": ["배송 시작되면 취소 안 돼요?", "받고 나서 반품 돼요?"],
+      "answer_text": "상품 발송이 시작된 뒤에는 단순 변심에 의한 취소가 제한되며, 수령 후 7일 이내 청약철회만 가능합니다.",
+      "slots": [],
+      "strict": true,
+      "source": "취소·환불 정책 3조"
+    },
+    {
+      "faq_id": "faq_rf_004",
+      "label": "REFUND_CANCEL",
+      "question_variants": ["반품하면 배송비 내야 해요?", "환불 배송비", "단순변심 반품"],
+      "answer_text": "단순 변심으로 반품하는 경우 왕복 배송비 6,000원이 발생합니다.",
+      "slots": [],
+      "strict": true,
+      "source": "취소·환불 정책 4조"
+    },
+    {
+      "faq_id": "faq_rf_005",
+      "label": "REFUND_CANCEL",
+      "question_variants": ["불량이면 반품 배송비는요?", "하자 있으면 어떻게 해요"],
+      "answer_text": "상품 하자에 의한 반품은 배송비 없이 처리됩니다.",
+      "slots": [],
+      "strict": true,
+      "source": "취소·환불 정책 5조"
+    },
+    {
+      "faq_id": "faq_rw_001",
+      "label": "REWARD_OPTION",
+      "question_variants": ["옵션 나중에 바꿀 수 있어요?", "리워드 변경 되나요", "구성 바꾸고 싶어요"],
+      "answer_text": "리워드 옵션은 펀딩 마감 전까지 자유롭게 변경하실 수 있습니다.",
+      "slots": [],
+      "strict": false,
+      "source": "리워드 정책 2조"
+    },
+    {
+      "faq_id": "faq_rw_002",
+      "label": "REWARD_OPTION",
+      "question_variants": ["얼리버드 아직 남았어요?", "한정수량 몇개 남음", "얼리버드 마감됐나요", "얼리버드 아직임?"],
+      "answer_text": "얼리버드는 50개 한정이며 현재 {early_bird_left}개 남았습니다. 소진되면 자동으로 마감됩니다.",
+      "slots": ["early_bird_left"],
+      "strict": false,
+      "source": "리워드 정보"
+    },
+    {
+      "faq_id": "faq_rw_003",
+      "label": "REWARD_OPTION",
+      "question_variants": ["두 개 사고 싶어요", "여러 개 구매 어떻게 해요?"],
+      "answer_text": "두 개 이상 구매하시려면 원하는 리워드를 각각 신청해 주세요.",
+      "slots": [],
+      "strict": false,
+      "source": "리워드 정책 3조"
+    },
+    {
+      "faq_id": "faq_rw_004",
+      "label": "REWARD_OPTION",
+      "question_variants": ["가격이 어떻게 돼요?", "리워드 종류 뭐 있어요?"],
+      "answer_text": "리워드 구성은 얼리버드 389,000원, 기본 429,000원, 풀패키지 489,000원 세 가지입니다.",
+      "slots": [],
+      "strict": false,
+      "source": "리워드 정보"
+    },
+    {
+      "faq_id": "faq_rw_005",
+      "label": "REWARD_OPTION",
+      "question_variants": ["구성품 차이가 뭐예요?", "리워드마다 뭐가 달라요?"],
+      "answer_text": "리워드마다 구성품이 다르며, 자세한 내용은 프로젝트 페이지 리워드 항목에서 확인하실 수 있습니다.",
+      "slots": [],
+      "strict": false,
+      "source": "리워드 정보"
+    },
+    {
+      "faq_id": "faq_ac_001",
+      "label": "ACCOUNT_APP",
+      "question_variants": ["앱 없어도 살 수 있어요?", "웹에서도 돼요?", "앱 깔아야 하나요"],
+      "answer_text": "앱 설치 없이 웹에서도 펀딩에 참여하실 수 있습니다.",
+      "slots": [],
+      "strict": false,
+      "source": "이용 안내 1조"
+    },
+    {
+      "faq_id": "faq_ac_002",
+      "label": "ACCOUNT_APP",
+      "question_variants": ["회원가입 해야 하나요?", "비회원 구매 돼요?"],
+      "answer_text": "펀딩 참여를 위해서는 회원가입과 본인인증이 필요합니다.",
+      "slots": [],
+      "strict": false,
+      "source": "이용 안내 2조"
+    },
+    {
+      "faq_id": "faq_ac_003",
+      "label": "ACCOUNT_APP",
+      "question_variants": ["알림 어디서 신청해요?", "알림 받고 싶어요", "방송 알림"],
+      "answer_text": "프로젝트 페이지의 알림 신청 버튼을 누르시면 방송 시작과 마감 임박 시 알림을 받으실 수 있습니다.",
+      "slots": [],
+      "strict": false,
+      "source": "이용 안내 4조"
+    },
+    {
+      "faq_id": "faq_ac_004",
+      "label": "ACCOUNT_APP",
+      "question_variants": ["카카오 로그인 돼요?", "네이버로 가입할 수 있어요?"],
+      "answer_text": "카카오·네이버 계정으로 간편 로그인이 가능합니다.",
+      "slots": [],
+      "strict": false,
+      "source": "이용 안내 3조"
+    },
+    {
+      "faq_id": "faq_ev_001",
+      "label": "EVENT_COUPON",
+      "question_variants": ["쿠폰 어디에 넣어요?", "쿠폰 적용 어떻게 해요", "할인쿠폰 사용법"],
+      "answer_text": "쿠폰은 펀딩 신청 마지막 단계의 쿠폰 적용란에서 사용하실 수 있습니다.",
+      "slots": [],
+      "strict": false,
+      "source": "이벤트 정책 1조"
+    },
+    {
+      "faq_id": "faq_ev_002",
+      "label": "EVENT_COUPON",
+      "question_variants": ["포인트 같이 써져요?", "쿠폰이랑 적립금 중복돼요?"],
+      "answer_text": "쿠폰과 적립금은 중복 사용이 가능합니다.",
+      "slots": [],
+      "strict": false,
+      "source": "이벤트 정책 3조"
+    },
+    {
+      "faq_id": "faq_ev_003",
+      "label": "EVENT_COUPON",
+      "question_variants": ["방송에서 받은 쿠폰 다른 데도 써요?", "라이브 쿠폰 유효기간"],
+      "answer_text": "라이브 방송 시청 중 발급되는 쿠폰은 해당 프로젝트에만 사용 가능하며 유효기간은 발급일로부터 7일입니다.",
+      "slots": [],
+      "strict": false,
+      "source": "이벤트 정책 2조"
+    },
+    {
+      "faq_id": "faq_ev_004",
+      "label": "EVENT_COUPON",
+      "question_variants": ["적립금 얼마나 쌓여요?", "포인트 적립되나요?"],
+      "answer_text": "적립금은 펀딩 결제 완료 후 결제 금액의 1%가 적립됩니다.",
+      "slots": [],
+      "strict": false,
+      "source": "이벤트 정책 4조"
+    }
+  ]
+}
