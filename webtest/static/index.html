@@ -245,8 +245,7 @@ function render(m){
     box.className = 'm bot' + (fb ? ' fallback' : '');
     box.innerHTML = `<div class="who">🤖 펀딩 도우미</div>
       <div class="reply">@${esc(m.reply_nick)} ${esc(m.reply_text)}</div>
-      <div>${esc(m.text)}</div>
-      <div class="meta"><span>${m.decision}</span>${m.label?`<span>${m.label}</span>`:''}${m.faq_id?`<span>${m.faq_id}</span>`:''}<span>${m.latency_ms}ms</span></div>`;
+      <div>${esc(m.text)}</div>`;
   } else if (m.type === 'system'){
     box.className = 'm system'; box.textContent = '· ' + m.text + ' ·';
   } else return;
