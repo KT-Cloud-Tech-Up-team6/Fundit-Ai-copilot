@@ -1,6 +1,6 @@
 """PoC 평가 스크립트 — 검증 계획(V1~V10) 중 O파트 담당 지표 측정.
 
-실행 (프로젝트 루트에서):  python -m eval.run_eval
+실행 (프로젝트 루트에서):  python -m eval.o_part.run_eval
 GEMINI_API_KEY 필요 (.env 참고).
 
 측정 지표 (검증 계획 13-2 O파트 프로토콜 기준):
@@ -79,7 +79,7 @@ def build_service() -> tuple[CopilotService, LiveContext]:
 def collect(svc: CopilotService) -> list[dict]:
     """전 섹션 실행. 섹션별 gold 기대값과 예측·지연을 record 로 남긴다."""
     questions = json.loads(
-        (Path(__file__).parent / "questions.json").read_text(encoding="utf-8"))
+        (Path(__file__).parent / "data" / "questions.json").read_text(encoding="utf-8"))
     records: list[dict] = []
 
     section_gold = {
@@ -288,7 +288,7 @@ def main() -> None:
     metrics = compute_metrics(records, ctx)
     report(records, metrics)
 
-    out_dir = Path(__file__).parent / "results"
+    out_dir = Path(__file__).parent.parent / "results"  # eval/results (공용)
     out_dir.mkdir(exist_ok=True)
     out = out_dir / f"report_{datetime.now():%Y%m%d_%H%M%S}.json"
     out.write_text(json.dumps({

@@ -10,7 +10,13 @@
       "Bash(git commit -q -m 'fix: 미디어 스트리밍 응답으로 영상 끊김 해결 + 가상 시청자 채팅 시뮬레이터 *)",
       "Bash(git commit -q -m 'fix: 주기적 강제 동기화 제거 — 늦은 입장 시 1회 시킹만 \\(재생 끊김 원인 제거\\) *)",
       "Bash(git commit -q -m 'fix: 봇 답변의 판정 칩\\(디버그 정보\\) 화면에서 제거 — 로그·리포트에만 유지 *)",
-      "Bash(git commit -q -m 'feat: 판매자 알림 패널 — UNANSWERABLE 질문을 채팅 폴백 대신 판매자에게 실시간 알림 *)"
+      "Bash(git commit -q -m 'feat: 판매자 알림 패널 — UNANSWERABLE 질문을 채팅 폴백 대신 판매자에게 실시간 알림 *)",
+      "Bash(ffmpeg -y -v error -i webtest/uploads/video.mp4 -vf scale=-2:480 -c:v libx264 -preset veryfast -crf 23 -r 30 -pix_fmt yuv420p -c:a aac -b:a 96k -movflags +faststart webtest/uploads/video_480.mp4)",
+      "Bash(npx vercel *)",
+      "Bash(PYTHONIOENCODING=utf-8 python -m webtest.report http://127.0.0.1:8000 team-only)",
+      "Bash(git mv *)",
+      "Bash(PYTHONIOENCODING=utf-8 python -m eval.o_part.smoke_offline)",
+      "Bash(git commit -q -m 'refactor\\(o-part\\): 평가 스크립트를 eval/o_part/ 로 재배치 — 파트별 평가 폴더 양식 통일 *)"
     ]
   }
 }
