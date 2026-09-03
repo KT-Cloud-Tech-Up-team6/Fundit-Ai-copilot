@@ -5,3 +5,4 @@ __pycache__/
 venv/
 eval/results/
 webtest/uploads/
+*.log
