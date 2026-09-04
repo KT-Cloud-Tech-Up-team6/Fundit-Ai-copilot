@@ -10,7 +10,8 @@ O파트(플랫폼·펀딩 FAQ)와 P파트(상품 RAG)가 답하고, 근거 없�
 
 ## 담당·브랜치 설계 (2026-09-03 통합 완료)
 
-- **원격**: `origin = github.com/KT-Cloud-Tech-Up-team6/live-commerce-copilot-mvp1` (팀 리포)
+- **원격**: `mvp = github.com/KT-Cloud-Tech-Up-team6/live-commerce-copilot-mvp` (**push 대상 팀 리포** — 2026-09-04 생성·업로드 완료)
+  / `origin = …/live-commerce-copilot-mvp1` (현서 원본, 읽기 전용 — byeol-lab 쓰기 권한 없음)
 - **main**: 통합 브랜치 (O+P+webtest 병합 완료, 어댑터·인증 통일 포함)
 - **feat/o-part**: 박금별 — O파트 + 공용 구조(shared/orchestrator/api) + eval/o_part
 - **feat/p-part**: 심현서 — P파트 RAG (재배치만, **로직 무변경 원칙**) + eval/p_part
@@ -72,8 +73,8 @@ python -m eval.o_part.run_eval           # O 평가 (무료 등급: 분당15·�
 
 ## 미결 사항
 
-- [ ] 팀 리포 push — **403 권한 없음**: byeol-lab 계정에 리포 Write 초대 필요
-      또는 `gh auth login` 으로 토큰 갱신 후 main + feat/* 4개 브랜치 push
+- [x] 팀 리포 push 완료 — 새 리포 `live-commerce-copilot-mvp` 에 main + feat/* 4개
+      브랜치 업로드 (gh CLI 기기 인증, 이후 push는 `git push mvp <브랜치>`)
 - [ ] Vercel 배포 (vercel login 필요; webtest/README.md 절차 — KV 필수)
 - [ ] 사용자 PC 영상 재생 끊김: 앱 문제 아님(직접 파일 재생도 끊김 확인),
       다른 기기/브라우저 하드웨어 가속으로 우회
