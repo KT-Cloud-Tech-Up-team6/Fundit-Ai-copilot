@@ -53,9 +53,9 @@ docs/            EVAL_REPORT.md(O 164건 평가), LIVE_TEST_REPORT.md(세션 리
 
 ## 평가 현황
 
-- O파트 164건: 전 지표 PASS (V6 100%, 오드롭 0, 할루시네이션 0, 평균 1.04s)
-  — docs/EVAL_REPORT.md. 4회차 튜닝 재검증은 미실행 (라우터 프롬프트가 통합 중
-  또 바뀌었으므로 **164건 재평가 필요**: `python -m eval.o_part.run_eval`)
+- O파트 164건 (P 통합 라우터 기준, 튜닝 6회차, 2026-09-04): **전 지표 PASS**
+  — V1 100%/오드롭 0, Macro-F1 99.5, top-1 98.7, EM 98.2, 할루시네이션 0,
+  V6 96.4%, 평균 0.98s — docs/EVAL_REPORT.md
 - P파트(현서 자체): 100건 리플레이 Grounding 정확도 85% — parts/p_part/README.md
 - 라이브 목방송 세션 리포트: `python -m webtest.report http://127.0.0.1:8000 <pw>`
 - 비용: 댓글당 ≈$0.0008 (분류 1회 기준. P 경로는 +1~2회 = ≈2~3배)
@@ -72,8 +72,8 @@ python -m eval.o_part.run_eval           # O 평가 (무료 등급: 분당15·�
 
 ## 미결 사항
 
-- [ ] 팀 리포 push (gh auth login 후 main + feat/* 브랜치)
-- [ ] 라우터 변경 반영한 O 164건 재평가
+- [ ] 팀 리포 push — **403 권한 없음**: byeol-lab 계정에 리포 Write 초대 필요
+      또는 `gh auth login` 으로 토큰 갱신 후 main + feat/* 4개 브랜치 push
 - [ ] Vercel 배포 (vercel login 필요; webtest/README.md 절차 — KV 필수)
 - [ ] 사용자 PC 영상 재생 끊김: 앱 문제 아님(직접 파일 재생도 끊김 확인),
       다른 기기/브라우저 하드웨어 가속으로 우회
