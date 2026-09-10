@@ -1,4 +1,4 @@
-# Live Commerce Copilot
+# Fundit AI Copilot
 
 라이브 커머스/펀딩 방송의 **채팅 상담 코파일럿**.
 판매자가 일일이 답변할 수 없는 라이브 채팅 질문에 AI가 근거 기반으로 대신 답변하고,
