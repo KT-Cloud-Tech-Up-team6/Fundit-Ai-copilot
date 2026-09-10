@@ -1,0 +1,616 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Fundit AI Copilot API",
+    "description": "라이브 채팅 AI 자동 응대 — 기능 A(자동 답변) / 기능 B(자주 나오는 질문 요약)",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/funding-ai/lives/{live_id}/prepare": {
+      "post": {
+        "tags": [
+          "A. 라이브 자동 답변"
+        ],
+        "summary": "Prepare",
+        "description": "판매자 상품정보를 색인한다. 색인 전 comments 호출은 409 NOT_PREPARED.\n\nMVP 참고: 현 단계는 단일 상품(내장 KB) 검증 단계로, 전달된 knowledge 는\n저장·검증만 하고 답변 근거는 내장 상품 KB 를 사용한다. 멀티 상품 KB 동적\n교체는 다음 페이즈 (BE 계약은 동일 유지).",
+        "operationId": "prepare_api_v1_funding_ai_lives__live_id__prepare_post",
+        "parameters": [
+          {
+            "name": "live_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Live Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PrepareBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/funding-ai/lives/{live_id}/context": {
+      "put": {
+        "tags": [
+          "A. 라이브 자동 답변"
+        ],
+        "summary": "Put Context",
+        "operationId": "put_context_api_v1_funding_ai_lives__live_id__context_put",
+        "parameters": [
+          {
+            "name": "live_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Live Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContextBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/funding-ai/lives/{live_id}/comments": {
+      "post": {
+        "tags": [
+          "A. 라이브 자동 답변"
+        ],
+        "summary": "Analyze Comments",
+        "description": "댓글 배치(3초 단위 권장, 최대 50건)를 분류하고 자동 답변을 생성한다.\n\n- answer 가 있으면 시청자 채팅에 그대로 노출 (strict=true 는 문구 가공 금지)\n- answer 가 null(UNANSWERABLE)이면 시청자 화면 무노출 — 기능 B 로 집계됨\n- ignored 는 잡담·개인문의 (판매자 화면·집계 제외)",
+        "operationId": "analyze_comments_api_v1_funding_ai_lives__live_id__comments_post",
+        "parameters": [
+          {
+            "name": "live_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Live Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CommentsBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/funding-ai/lives/{live_id}/insights": {
+      "get": {
+        "tags": [
+          "B. 자주 나오는 질문 요약"
+        ],
+        "summary": "Insights",
+        "description": "미답변 질문의 관심사 랭킹. 대표 질문은 AI 생성이 아닌 실제 고객 원문.",
+        "operationId": "insights_api_v1_funding_ai_lives__live_id__insights_get",
+        "parameters": [
+          {
+            "name": "live_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Live Id"
+            }
+          },
+          {
+            "name": "top_n",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 5,
+              "title": "Top N"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/funding-ai/lives/{live_id}/unanswered": {
+      "get": {
+        "tags": [
+          "B. 자주 나오는 질문 요약"
+        ],
+        "summary": "Unanswered",
+        "description": "AI가 답하지 못한 질문을 병합 집계한 목록 — 판매자가 방송에서 직접 답변.",
+        "operationId": "unanswered_api_v1_funding_ai_lives__live_id__unanswered_get",
+        "parameters": [
+          {
+            "name": "live_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Live Id"
+            }
+          },
+          {
+            "name": "top_n",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 10,
+              "title": "Top N"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/funding-ai/health": {
+      "get": {
+        "tags": [
+          "공통"
+        ],
+        "summary": "Health",
+        "operationId": "health_api_v1_funding_ai_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/funding-ai/lives/{live_id}/reset": {
+      "post": {
+        "tags": [
+          "공통"
+        ],
+        "summary": "Reset",
+        "description": "테스트용: 해당 live 의 색인·집계 상태 초기화.",
+        "operationId": "reset_api_v1_funding_ai_lives__live_id__reset_post",
+        "parameters": [
+          {
+            "name": "live_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Live Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CommentIn": {
+        "properties": {
+          "comment_id": {
+            "type": "string",
+            "title": "Comment Id"
+          },
+          "text": {
+            "type": "string",
+            "maxLength": 300,
+            "minLength": 1,
+            "title": "Text"
+          },
+          "at_ms": {
+            "type": "integer",
+            "title": "At Ms",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "comment_id",
+          "text"
+        ],
+        "title": "CommentIn"
+      },
+      "CommentsBody": {
+        "properties": {
+          "comments": {
+            "items": {
+              "$ref": "#/components/schemas/CommentIn"
+            },
+            "type": "array",
+            "maxItems": 50,
+            "minItems": 1,
+            "title": "Comments"
+          }
+        },
+        "type": "object",
+        "required": [
+          "comments"
+        ],
+        "title": "CommentsBody"
+      },
+      "ContextBody": {
+        "properties": {
+          "project_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Project Id"
+          },
+          "broadcast": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Broadcast",
+            "default": {}
+          },
+          "funding": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Funding",
+            "default": {}
+          },
+          "extra_slots": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Extra Slots",
+            "default": {}
+          }
+        },
+        "type": "object",
+        "title": "ContextBody"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "KnowledgeChunk": {
+        "properties": {
+          "chunk_id": {
+            "type": "string",
+            "title": "Chunk Id"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "strict": {
+            "type": "boolean",
+            "title": "Strict",
+            "default": false
+          },
+          "source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source"
+          }
+        },
+        "type": "object",
+        "required": [
+          "chunk_id",
+          "category",
+          "text"
+        ],
+        "title": "KnowledgeChunk"
+      },
+      "PrepareBody": {
+        "properties": {
+          "product_category": {
+            "type": "string",
+            "title": "Product Category"
+          },
+          "knowledge": {
+            "items": {
+              "$ref": "#/components/schemas/KnowledgeChunk"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Knowledge"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_category",
+          "knowledge"
+        ],
+        "title": "PrepareBody"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}
