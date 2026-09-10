@@ -1,0 +1,8 @@
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+
+unanswered_interest.json
+test_post_live_interest.json
+data/live_knowledge.json
