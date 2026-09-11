@@ -240,21 +240,10 @@ Post-Live Q&A
 └── README.md
 ```
 
----
-
-## 8. Tech Stack
-
-- Python
-- Google Vertex AI
-- Gemini 3.5 Flash-Lite
-- MCP Python SDK
-- Pydantic
-- JSON
-- Markdown Knowledge Base
 
 ---
 
-## 9. Setup
+## 8. Setup
 
 ```bash
 python3 -m venv .venv
@@ -264,7 +253,7 @@ pip install -r requirements.txt
 
 ---
 
-## 10. Tests
+## 9. Tests
 
 ```bash
 python3 -m tests.test_product_mcp
@@ -288,7 +277,7 @@ python3 -m scripts.manual_live_session
 
 ---
 
-## 11. Development Status
+## 10. Development Status
 
 ### Completed
 
@@ -318,7 +307,7 @@ python3 -m scripts.manual_live_session
 
 ---
 
-## 12. Planned A2A Architecture
+## 11. Planned A2A Architecture
 
 A2A는 현재 구현 예정 단계입니다.
 
@@ -336,10 +325,3 @@ A2A는 현재 구현 예정 단계입니다.
 
 MCP는 **Agent와 Knowledge / Tool의 연결**, A2A는 **Agent와 Agent 간 역할 분담 및 협업**을 담당하도록 설계할 예정입니다.
 
----
-
-## Goal
-
-본 프로젝트의 목표는 단순한 라이브커머스 Q&A 챗봇이 아니라,
-
-**상품 정보 Grounding, 실시간 고객 관심사 분석, Human-in-the-loop Knowledge Update, MCP 기반 Knowledge 연결, A2A 기반 Agent 협업을 결합한 Live Commerce AI Copilot을 구축하는 것**입니다.
