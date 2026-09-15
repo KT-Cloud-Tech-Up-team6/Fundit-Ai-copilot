@@ -576,22 +576,3 @@ needs_seller_attention
 ```
 
 ---
-
-## 12. 현재 상태
-
-| 기능 | 상태 |
-|---|---|
-| Product KB Retrieval | ✅ |
-| Grounding | ✅ |
-| Unanswered Topic 분석 | ✅ |
-| Interest Tracker | ✅ |
-| Counselor Style RAG | ✅ |
-| MCP Product / Live Knowledge | ✅ |
-| Product A2A Agent | ✅ |
-| A2A GROUNDED E2E | ✅ |
-| A2A PARTIAL E2E | ✅ |
-| A2A NO E2E | ✅ |
-| Platform Agent 연동 | ⏳ |
-
-현재 Product Agent 구현은 완료된 상태이며,  
-다음 단계는 별도 담당 파트의 Platform Agent 인터페이스를 전달받아 실제 Agent-to-Agent 연결을 진행하는 것입니다.
