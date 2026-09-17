@@ -12,9 +12,9 @@
 
 | 영역 | 담당 | 내용 |
 |---|---|---|
-| P파트 (상품) | 심현서 | 상품 KB RAG — 검색 + Grounding 3단 판정, 미답변 관심사 분석·집계 |
-| O파트 (플랫폼·펀딩) | 박금별 | FAQ 38건 + 동적 슬롯 치환 (LLM 답변 생성 금지) |
-| 공용 구조·통합 | 공동 | 오케스트레이터(라우터), 파트 계약, 라이브 테스트 환경, 평가 하네스 |
+| P파트 (상품) | 심현서 | 상품 KB RAG — 검색 + Grounding 3단 판정, **상담사 문체 RAG(K쇼핑)**, 미답변 관심사 분석·집계, A2A Product Agent, MCP Live Knowledge |
+| O파트 (플랫폼·펀딩) | 박금별 | FAQ 38건 + 동적 슬롯 치환 (LLM 답변 생성 금지), A2A Platform Agent |
+| 공용 구조·통합 | 공동 | 오케스트레이터(라우터), 파트 계약, **동적 상품 KB(prepare)**, BE API, 라이브 테스트 환경, 평가 하네스 |
 
 ## 폴더 구조
 
@@ -36,18 +36,22 @@ docs/            설계 문서 · 평가 리포트 · 아키텍처 다이어그�
 ## 아키텍처 (요약)
 
 ```
-[LIVE 전]  판매자 상품정보 → KB 구축 (정제·strict 태깅·검수) → O/P KB
+[LIVE 전]  판매자 상품정보 → POST /prepare → 활성 상품 KB 교체 (동적 — 재학습 불필요)
 
 [LIVE 중]  채팅 → 라우터(Gemini 분류 전용)
    ├─ 잡담·개인문의 → 드롭
    ├─ 플랫폼 질문 → O파트: FAQ 원문 + 실시간 값 치환
-   └─ 상품 질문   → P파트: KB 검색 → Grounding 판정
-        ├─ 근거 있음 → 답변 (부분 근거는 확인분만)
+   └─ 상품 질문   → P파트: KB 검색(규칙+일반 폴백) → Grounding 판정
+        │            + Counselor Style RAG (상담사 말투 — 사실은 KB 에서만)
+        ├─ 근거 있음 → 상담사 문체 답변 (부분 근거는 확인분만)
         └─ 근거 없음 → 관심사 분석·집계 → 판매자 Copilot 화면
 ```
 
 - 모델: **Gemini 3.5 Flash-Lite** 단일 (temperature 0, 구조화 출력)
-- 상세: `docs/ai_architecture.png`, `docs/EVAL_REPORT.md`
+- **A2A**: Product Agent(현서, :9999)·Platform Agent(:9998) — Agent Card + JSON-RPC,
+  실행 `python -m parts.p_part.agents.product_agent_server` / `parts.o_part.agents.platform_agent_server`
+- **MCP**: `parts/p_part/mcp_servers/product_knowledge_server.py` — Live Knowledge (판매자 확인 정보 축적)
+- 상세: `docs/ai_architecture.png`, `docs/EVAL_REPORT.md`, `api/API_GUIDE.md`
 
 ## 검증 결과 (2026-09-04)
 

@@ -2,8 +2,30 @@ import re
 from pathlib import Path
 
 
-# 통합 재배치: KB 는 parts/p_part/data/ 에 위치 (경로만 수정, 로직 무변경)
-MD_FILE = Path(__file__).parent / "data" / "product_5454434.md"
+
+# 통합 재배치: KB 는 parts/p_part/data/ (경로만 수정, 파싱 로직 무변경)
+PROJECT_ROOT = Path(__file__).resolve().parent
+
+MD_FILE = (
+    PROJECT_ROOT
+    / "data"
+    / "product_5454434.md"
+)
+
+# 통합 시 추가: 상품 교체(동적 KB) 런타임 오버라이드.
+# prepare API 가 새 상품 MD 를 지정하면 이후 retrieve 가 그 KB 를 읽는다.
+# retrieve() 는 호출마다 load_chunks() 를 다시 읽으므로 즉시 반영된다.
+_md_override: Path | None = None
+
+
+def set_product_md(path) -> None:
+    """활성 상품 KB(MD) 교체. None 이면 기본 내장 KB 로 복귀."""
+    global _md_override
+    _md_override = Path(path) if path else None
+
+
+def active_md_path() -> Path:
+    return _md_override or MD_FILE
 
 
 # =========================================================
@@ -11,7 +33,7 @@ MD_FILE = Path(__file__).parent / "data" / "product_5454434.md"
 # =========================================================
 
 def load_chunks():
-    text = MD_FILE.read_text(
+    text = active_md_path().read_text(
         encoding="utf-8"
     )
 
@@ -718,6 +740,43 @@ def extract_words(text: str):
 
 
 # =========================================================
+# 6-1. 일반 폴백 Retrieval (통합 시 추가)
+#
+# RETRIEVAL_RULES 는 기본 상품(로보락) 어휘에 특화된 규칙표라
+# prepare 로 교체된 새 상품 질문은 규칙에 걸리지 않는다.
+# 규칙·사양 토큰이 모두 없을 때만 이 일반 단어 매칭이 발동하며,
+# 규칙이 매칭되는 기존 경로는 그대로 유지된다 (기존 평가 성능 불변).
+# =========================================================
+
+def _generic_retrieve(question, chunks, top_k):
+    question_words = extract_words(question)
+    if not question_words:
+        return []
+
+    question_numbers = set(extract_numbers(question))
+
+    scored = []
+    for chunk in chunks:
+        normalized_text = normalize(chunk["text"])
+        normalized_category = normalize(chunk["category"])
+
+        score = 0
+        for word in question_words:
+            if word in normalized_category:
+                score += 8
+            elif word in normalized_text:
+                score += 4
+        if question_numbers & set(extract_numbers(chunk["text"])):
+            score += 5
+
+        if score >= 8:
+            scored.append((score, chunk))
+
+    scored.sort(key=lambda item: item[0], reverse=True)
+    return [chunk for _, chunk in scored[:top_k]]
+
+
+# =========================================================
 # 7. Retrieval
 # =========================================================
 
@@ -803,7 +862,12 @@ def retrieve(
         not matched_rules
         and not spec_tokens
     ):
-        return []
+        # 통합 시 추가: 새 상품(동적 KB) 질문 대응 일반 폴백 (6-1 참조)
+        return _generic_retrieve(
+            question,
+            chunks,
+            top_k
+        )
 
 
     # -----------------------------------------------------
@@ -1057,6 +1121,16 @@ def retrieve(
         if len(filtered) >= top_k:
             break
 
+
+    # 통합 시 추가: 규칙은 매칭됐지만 활성 KB 에서 아무것도 찾지 못한 경우
+    # (예: 상품 교체 후 기본 상품 규칙만 걸린 질문) 일반 폴백을 마지막으로 시도.
+    # 규칙 경로가 결과를 낸 경우에는 기존 동작 그대로다.
+    if not filtered:
+        return _generic_retrieve(
+            question,
+            chunks,
+            top_k
+        )
 
     return filtered
 

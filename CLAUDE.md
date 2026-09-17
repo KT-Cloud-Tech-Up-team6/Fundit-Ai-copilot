@@ -45,6 +45,24 @@ docs/            EVAL_REPORT.md(O 164건 평가), LIVE_TEST_REPORT.md(세션 리
 5. 모델: `gemini-3.5-flash-lite`, 인증은 orchestrator/llm.py 로 통일
    (env: GEMINI_API_KEY 또는 GOOGLE_GENAI_USE_VERTEXAI=1)
 
+## A2A 통합 (2026-09-17 완료)
+
+- 현서 a2a 리포(live-commerce-mcp-a2a-copilot)의 신버전 P파트를 **전면 흡수**:
+  rag_answer(문체 RAG 통합)·rag_retriever·analyzer·tracker 교체 +
+  counselor_style_retriever, services/(product_copilot 단일 진입점 등),
+  agents/(A2A Product Agent), mcp_servers/(Live Knowledge), data/kshopping_style
+- **동적 상품 KB (목데이터 탈출)**: prepare API → MD 변환 → rag_retriever.set_product_md
+  로 활성 KB 즉시 교체. retriever 에 일반 폴백 추가 (규칙표는 로보락 특화라
+  새 상품 질문이 안 걸림 — 규칙 미매칭/규칙 빈손일 때만 발동, 기존 경로 불변).
+  E2E 검증: 에어프라이어 등록 → "용량 몇 리터?" GROUNDED "5.5L로 확인됩니다"(문체 적용),
+  로보락 질문은 새 KB 기준 미답변 처리
+- **Platform Agent A2A** 신설 (인수인계 요구): parts/o_part/services/platform_copilot
+  (process_platform_question 단일 진입점) + agents/platform_agent_server (:9998)
+- P 어댑터는 process_product_question() 사용 — analyzer 를 파트가 내장 수행하므로
+  api/webtest 는 meta.unresolved_topics 로만 집계 (이중 호출 금지)
+- MVP 한계: 활성 KB 프로세스 전역 1개 / 관심사 토픽 체계는 아직 로보락 기준
+- 의존성 추가: a2a-sdk[http-server]==1.1.2, mcp
+
 ## 현서 코드 취급 원칙 (사용자 지시)
 
 - **로직·프롬프트 무변경**. 허용된 수정: 파일 이동에 따른 경로·임포트,

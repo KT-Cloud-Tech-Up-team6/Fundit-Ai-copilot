@@ -5,8 +5,7 @@ from pydantic import BaseModel
 
 from orchestrator import llm
 
-# 통합 시 변경: 인증·모델 선택을 공용 llm 모듈로 통일
-# (env 로 API 키/Vertex 선택 — 분석 로직·프롬프트 무변경)
+# 통합 시 변경: 인증·모델 선택을 공용 llm 모듈로 통일 (분석 로직·프롬프트 무변경)
 MODEL = llm.DEFAULT_MODEL
 
 

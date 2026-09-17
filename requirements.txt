@@ -5,3 +5,5 @@ pydantic>=2.13
 python-dotenv>=1.0
 httpx>=0.27
 python-multipart>=0.0.9
+a2a-sdk[http-server]==1.1.2
+mcp>=1.0
