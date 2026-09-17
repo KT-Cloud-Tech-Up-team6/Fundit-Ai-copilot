@@ -6,6 +6,11 @@ JSON-RPC:   http://127.0.0.1:9998/a2a/platform
 """
 import os
 
+from dotenv import load_dotenv
+
+# 인수인계 STEP4: API 키·모델 설정을 .env 에서 읽는다 (api/webtest 와 동일)
+load_dotenv()
+
 import uvicorn
 from a2a.server.request_handlers import DefaultRequestHandler
 from a2a.server.routes import create_agent_card_routes, create_jsonrpc_routes

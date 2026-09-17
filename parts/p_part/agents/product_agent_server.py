@@ -1,5 +1,10 @@
 import os
 
+from dotenv import load_dotenv
+
+# 인수인계 STEP4: API 키·모델 설정을 .env 에서 읽는다 (api/webtest 와 동일)
+load_dotenv()
+
 import uvicorn
 
 from a2a.server.request_handlers import (
