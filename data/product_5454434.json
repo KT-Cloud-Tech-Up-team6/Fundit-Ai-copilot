@@ -1,0 +1,210 @@
+{
+  "product_id": "5454434",
+  "product_name": "로보락 F25",
+  "product_category": "가전",
+  "knowledge": [
+    {
+      "chunk_id": "kb_p_001",
+      "category": "제품 기본 정보",
+      "text": "제품 모델은 F25이며, 본체 모델은 WD5M1A, 도크 모델은 MDS15HRR이고 파생모델로 MDS17HRR이 표기되어 있습니다.",
+      "strict": true,
+      "source": "KT알파 쇼핑 상품상세 p.21-22"
+    },
+    {
+      "chunk_id": "kb_p_002",
+      "category": "제품 크기 및 무게",
+      "text": "본체 크기는 262×221×1100mm이며, 도크 포함 크기는 330×316×1157mm입니다.",
+      "strict": true,
+      "source": "KT알파 쇼핑 상품상세 p.21"
+    },
+    {
+      "chunk_id": "kb_p_003",
+      "category": "제품 크기 및 무게",
+      "text": "본체 무게는 4.2kg이며, 본체와 도크를 포함한 무게는 5.7kg입니다.",
+      "strict": true,
+      "source": "KT알파 쇼핑 상품상세 p.21"
+    },
+    {
+      "chunk_id": "kb_p_004",
+      "category": "제품 기본 정보",
+      "text": "제품 색상은 블랙입니다.",
+      "strict": true,
+      "source": "KT알파 쇼핑 상품상세 p.21"
+    },
+    {
+      "chunk_id": "kb_p_005",
+      "category": "제품 성능 및 사양",
+      "text": "최대 흡입력은 20,000Pa입니다.",
+      "strict": true,
+      "source": "KT알파 쇼핑 상품상세 p.14, p.21"
+    },
+    {
+      "chunk_id": "kb_p_006",
+      "category": "배터리 및 전원",
+      "text": "배터리는 TYP 4,000mAh이며 정격 용량은 3,700mAh입니다.",
+      "strict": true,
+      "source": "KT알파 쇼핑 상품상세 p.21"
+    },
+    {
+      "chunk_id": "kb_p_007",
+      "category": "배터리 및 전원",
+      "text": "정격 입력은 220-240V~, 50-60Hz이며 충전 시 0.35A, 건조 시 3A입니다.",
+      "strict": true,
+      "source": "KT알파 쇼핑 상품상세 p.21"
+    },
+    {
+      "chunk_id": "kb_p_008",
+      "category": "배터리 및 전원",
+      "text": "정격 출력은 30VDC 1A입니다.",
+      "strict": true,
+      "source": "KT알파 쇼핑 상품상세 p.21"
+    },
+    {
+      "chunk_id": "kb_p_009",
+      "category": "물통 용량",
+      "text": "오수통 용량은 720ml이며 청수통 용량은 870ml입니다.",
+      "strict": true,
+      "source": "KT알파 쇼핑 상품상세 p.21"
+    },
+    {
+      "chunk_id": "kb_p_010",
+      "category": "제품 성능 및 사양",
+      "text": "Eco 모드 기준 소음은 약 71dB(A)입니다.",
+      "strict": true,
+      "source": "KT알파 쇼핑 상품상세 p.21"
+    },
+    {
+      "chunk_id": "kb_p_011",
+      "category": "주요 기능",
+      "text": "JawScrapers 구조를 적용해 롤러에 붙은 머리카락을 제거하도록 설계되어 있습니다.",
+      "strict": false,
+      "source": "KT알파 쇼핑 상품상세 p.4-6"
+    },
+    {
+      "chunk_id": "kb_p_012",
+      "category": "주요 기능",
+      "text": "직선형 플로팅 스크래퍼가 롤러에 밀착해 먼지를 긁어내도록 구성되어 있습니다.",
+      "strict": false,
+      "source": "KT알파 쇼핑 상품상세 p.5, p.8"
+    },
+    {
+      "chunk_id": "kb_p_013",
+      "category": "주요 기능",
+      "text": "롤러에 남은 오염을 스크래퍼가 밀어내고 오수를 회수하는 구조가 적용되어 있습니다.",
+      "strict": false,
+      "source": "KT알파 쇼핑 상품상세 p.5"
+    },
+    {
+      "chunk_id": "kb_p_014",
+      "category": "제품 구조",
+      "text": "물통을 청소기 하부에 배치한 하부 물통 탑재 시스템을 적용했습니다.",
+      "strict": false,
+      "source": "KT알파 쇼핑 상품상세 p.8-9"
+    },
+    {
+      "chunk_id": "kb_p_015",
+      "category": "제품 성능 및 사양",
+      "text": "청소 시 최대 20N의 청소 압력을 제공합니다.",
+      "strict": true,
+      "source": "KT알파 쇼핑 상품상세 p.9"
+    },
+    {
+      "chunk_id": "kb_p_016",
+      "category": "조작성",
+      "text": "청소 헤드는 최대 70도 회전을 지원합니다.",
+      "strict": true,
+      "source": "KT알파 쇼핑 상품상세 p.9"
+    },
+    {
+      "chunk_id": "kb_p_017",
+      "category": "세척 및 건조",
+      "text": "롤러를 고온으로 세척하는 기능이 소개되어 있습니다.",
+      "strict": false,
+      "source": "KT알파 쇼핑 상품상세 p.10"
+    },
+    {
+      "chunk_id": "kb_p_018",
+      "category": "세척 및 건조",
+      "text": "90°C 밀폐 건조 시스템을 지원하며 빠른 건조 시간은 약 5분으로 안내되어 있습니다.",
+      "strict": true,
+      "source": "KT알파 쇼핑 상품상세 p.11"
+    },
+    {
+      "chunk_id": "kb_p_019",
+      "category": "주요 기능",
+      "text": "FlatReach 2.0 기능을 통해 약 12.5cm 높이의 낮은 공간에서도 청소할 수 있도록 설계되어 있습니다.",
+      "strict": true,
+      "source": "KT알파 쇼핑 상품상세 p.12"
+    },
+    {
+      "chunk_id": "kb_p_020",
+      "category": "조작성",
+      "text": "본체를 180도로 눕혔을 때 손잡이 미니휠을 이용해 낮은 공간에서 밀고 당길 수 있도록 설계되어 있습니다.",
+      "strict": true,
+      "source": "KT알파 쇼핑 상품상세 p.13"
+    },
+    {
+      "chunk_id": "kb_p_021",
+      "category": "주요 기능",
+      "text": "약 1mm 수준의 틈새 청소가 가능하도록 설계되어 있습니다.",
+      "strict": true,
+      "source": "KT알파 쇼핑 상품상세 p.15"
+    },
+    {
+      "chunk_id": "kb_p_022",
+      "category": "제품 성능 및 사양",
+      "text": "롤러 회전 속도는 450RPM입니다.",
+      "strict": true,
+      "source": "KT알파 쇼핑 상품상세 p.15"
+    },
+    {
+      "chunk_id": "kb_p_023",
+      "category": "주요 기능",
+      "text": "DirTect 자동 오염 감지 기능을 통해 바닥 오염 정도를 감지하고 청소 출력과 물 분사량을 자동으로 조정합니다.",
+      "strict": false,
+      "source": "KT알파 쇼핑 상품상세 p.16"
+    },
+    {
+      "chunk_id": "kb_p_024",
+      "category": "청소 모드",
+      "text": "AUTO 모드, ECO 모드, 흡수 모드를 제공합니다.",
+      "strict": true,
+      "source": "KT알파 쇼핑 상품상세 p.17"
+    },
+    {
+      "chunk_id": "kb_p_025",
+      "category": "청소 모드",
+      "text": "흡수 모드는 바닥 상태에 따라 물기를 흡수하고 남은 물기를 스크래퍼로 제거하는 방식으로 안내되어 있습니다.",
+      "strict": false,
+      "source": "KT알파 쇼핑 상품상세 p.18"
+    },
+    {
+      "chunk_id": "kb_p_026",
+      "category": "제품 구조",
+      "text": "습식 오염 청소를 위해 초미세 섬유 롤러, PVC 물기 제거 스크래퍼, 오수통 거름망이 적용되어 있습니다.",
+      "strict": false,
+      "source": "KT알파 쇼핑 상품상세 p.19"
+    },
+    {
+      "chunk_id": "kb_p_027",
+      "category": "유지관리",
+      "text": "상품 상세페이지에서 로보락 전용 클리너 사용이 안내되어 있습니다.",
+      "strict": false,
+      "source": "KT알파 쇼핑 상품상세 p.20"
+    },
+    {
+      "chunk_id": "kb_p_028",
+      "category": "AS 및 보증",
+      "text": "A/S센터 전화번호는 1577-8911입니다.",
+      "strict": true,
+      "source": "KT알파 쇼핑 상품상세 p.22"
+    },
+    {
+      "chunk_id": "kb_p_029",
+      "category": "AS 및 보증",
+      "text": "A/S 보증기간은 구입 후 1년 이내로 표기되어 있습니다.",
+      "strict": true,
+      "source": "KT알파 쇼핑 상품상세 p.22"
+    }
+  ]
+}

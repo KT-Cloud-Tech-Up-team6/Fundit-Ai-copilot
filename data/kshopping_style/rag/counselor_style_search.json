@@ -1,0 +1,484 @@
+{
+  "metadata": {
+    "name": "Counselor Style Runtime Frame RAG",
+    "source": "counselor_style_corpus.json",
+    "input_corpus_entries": 3131,
+    "entry_count": 47,
+    "knowledge_role": "STYLE_ONLY",
+    "fact_source": false,
+    "retrieval_field": "retrieval_text",
+    "rule": "Frames are derived from K-Shopping counselor data and must only be used as response style references."
+  },
+  "styles": [
+    {
+      "style_type": "CONFIRMATION",
+      "retrieval_text": "{확인된 정보}로 확인됩니다.",
+      "pattern_type": "CORPUS_TEMPLATE",
+      "evidence_count": 9664,
+      "source_entry_count": 57,
+      "style_id": "style_frame_0001",
+      "knowledge_role": "STYLE_ONLY",
+      "can_be_used_as_fact": false
+    },
+    {
+      "style_type": "CONFIRMATION",
+      "retrieval_text": "문의주신 내용은 {확인된 정보}로 확인됩니다.",
+      "pattern_type": "CORPUS_TEMPLATE",
+      "evidence_count": 9579,
+      "source_entry_count": 1,
+      "style_id": "style_frame_0002",
+      "knowledge_role": "STYLE_ONLY",
+      "can_be_used_as_fact": false
+    },
+    {
+      "style_type": "CONFIRMATION",
+      "retrieval_text": "확인 감사합니다.",
+      "pattern_type": "EXTRACTED_FRAME",
+      "evidence_count": 1364,
+      "source_entry_count": 148,
+      "style_id": "style_frame_0003",
+      "knowledge_role": "STYLE_ONLY",
+      "can_be_used_as_fact": false
+    },
+    {
+      "style_type": "CONFIRMATION",
+      "retrieval_text": "네, 확인해 주셔서 감사합니다.",
+      "pattern_type": "EXTRACTED_FRAME",
+      "evidence_count": 233,
+      "source_entry_count": 23,
+      "style_id": "style_frame_0004",
+      "knowledge_role": "STYLE_ONLY",
+      "can_be_used_as_fact": false
+    },
+    {
+      "style_type": "CONFIRMATION",
+      "retrieval_text": "확인 감사드립니다.",
+      "pattern_type": "EXTRACTED_FRAME",
+      "evidence_count": 144,
+      "source_entry_count": 27,
+      "style_id": "style_frame_0005",
+      "knowledge_role": "STYLE_ONLY",
+      "can_be_used_as_fact": false
+    },
+    {
+      "style_type": "CONFIRMATION",
+      "retrieval_text": "확인해 주셔서 감사합니다.",
+      "pattern_type": "EXTRACTED_FRAME",
+      "evidence_count": 142,
+      "source_entry_count": 23,
+      "style_id": "style_frame_0006",
+      "knowledge_role": "STYLE_ONLY",
+      "can_be_used_as_fact": false
+    },
+    {
+      "style_type": "CONFIRMATION",
+      "retrieval_text": "네, {확인된 정보}로 확인됩니다.",
+      "pattern_type": "EXTRACTED_FRAME",
+      "evidence_count": 31,
+      "source_entry_count": 17,
+      "style_id": "style_frame_0007",
+      "knowledge_role": "STYLE_ONLY",
+      "can_be_used_as_fact": false
+    },
+    {
+      "style_type": "CONFIRMATION",
+      "retrieval_text": "확인해보니 {확인된 정보}로 확인됩니다.",
+      "pattern_type": "EXTRACTED_FRAME",
+      "evidence_count": 5,
+      "source_entry_count": 3,
+      "style_id": "style_frame_0008",
+      "knowledge_role": "STYLE_ONLY",
+      "can_be_used_as_fact": false
+    },
+    {
+      "style_type": "INFORMATION",
+      "retrieval_text": "{안내 정보}로 확인됩니다.",
+      "pattern_type": "CORPUS_TEMPLATE",
+      "evidence_count": 5563,
+      "source_entry_count": 56,
+      "style_id": "style_frame_0009",
+      "knowledge_role": "STYLE_ONLY",
+      "can_be_used_as_fact": false
+    },
+    {
+      "style_type": "INFORMATION",
+      "retrieval_text": "문의주신 내용은 {안내 정보}입니다.",
+      "pattern_type": "CORPUS_TEMPLATE",
+      "evidence_count": 5476,
+      "source_entry_count": 1,
+      "style_id": "style_frame_0010",
+      "knowledge_role": "STYLE_ONLY",
+      "can_be_used_as_fact": false
+    },
+    {
+      "style_type": "INFORMATION",
+      "retrieval_text": "확인된 내용을 안내드리겠습니다.",
+      "pattern_type": "EXTRACTED_FRAME",
+      "evidence_count": 94,
+      "source_entry_count": 47,
+      "style_id": "style_frame_0011",
+      "knowledge_role": "STYLE_ONLY",
+      "can_be_used_as_fact": false
+    },
+    {
+      "style_type": "INFORMATION",
+      "retrieval_text": "확인된 내용을 말씀드리겠습니다.",
+      "pattern_type": "EXTRACTED_FRAME",
+      "evidence_count": 60,
+      "source_entry_count": 24,
+      "style_id": "style_frame_0012",
+      "knowledge_role": "STYLE_ONLY",
+      "can_be_used_as_fact": false
+    },
+    {
+      "style_type": "INFORMATION",
+      "retrieval_text": "{안내 정보}입니다.",
+      "pattern_type": "EXTRACTED_FRAME",
+      "evidence_count": 23,
+      "source_entry_count": 2,
+      "style_id": "style_frame_0013",
+      "knowledge_role": "STYLE_ONLY",
+      "can_be_used_as_fact": false
+    },
+    {
+      "style_type": "GUIDANCE",
+      "retrieval_text": "{안내 내용}을 안내드립니다.",
+      "pattern_type": "CORPUS_TEMPLATE",
+      "evidence_count": 2267,
+      "source_entry_count": 1,
+      "style_id": "style_frame_0014",
+      "knowledge_role": "STYLE_ONLY",
+      "can_be_used_as_fact": false
+    },
+    {
+      "style_type": "GUIDANCE",
+      "retrieval_text": "문의주신 내용에 대해 안내드리겠습니다.",
+      "pattern_type": "EXTRACTED_FRAME",
+      "evidence_count": 244,
+      "source_entry_count": 126,
+      "style_id": "style_frame_0015",
+      "knowledge_role": "STYLE_ONLY",
+      "can_be_used_as_fact": false
+    },
+    {
+      "style_type": "GUIDANCE",
+      "retrieval_text": "{필요한 내용}을 말씀해 주세요.",
+      "pattern_type": "EXTRACTED_FRAME",
+      "evidence_count": 15,
+      "source_entry_count": 11,
+      "style_id": "style_frame_0016",
+      "knowledge_role": "STYLE_ONLY",
+      "can_be_used_as_fact": false
+    },
+    {
+      "style_type": "GUIDANCE",
+      "retrieval_text": "{확인할 내용}을 확인 부탁드립니다.",
+      "pattern_type": "EXTRACTED_FRAME",
+      "evidence_count": 9,
+      "source_entry_count": 4,
+      "style_id": "style_frame_0017",
+      "knowledge_role": "STYLE_ONLY",
+      "can_be_used_as_fact": false
+    },
+    {
+      "style_type": "GUIDANCE",
+      "retrieval_text": "안내드린 내용을 참고 부탁드립니다.",
+      "pattern_type": "EXTRACTED_FRAME",
+      "evidence_count": 8,
+      "source_entry_count": 4,
+      "style_id": "style_frame_0018",
+      "knowledge_role": "STYLE_ONLY",
+      "can_be_used_as_fact": false
+    },
+    {
+      "style_type": "POSITIVE",
+      "retrieval_text": "{문의 내용}은 가능합니다.",
+      "pattern_type": "CORPUS_TEMPLATE",
+      "evidence_count": 4690,
+      "source_entry_count": 136,
+      "style_id": "style_frame_0019",
+      "knowledge_role": "STYLE_ONLY",
+      "can_be_used_as_fact": false
+    },
+    {
+      "style_type": "POSITIVE",
+      "retrieval_text": "네, 맞습니다.",
+      "pattern_type": "EXTRACTED_FRAME",
+      "evidence_count": 295,
+      "source_entry_count": 38,
+      "style_id": "style_frame_0020",
+      "knowledge_role": "STYLE_ONLY",
+      "can_be_used_as_fact": false
+    },
+    {
+      "style_type": "POSITIVE",
+      "retrieval_text": "네, 가능합니다.",
+      "pattern_type": "EXTRACTED_FRAME",
+      "evidence_count": 276,
+      "source_entry_count": 91,
+      "style_id": "style_frame_0021",
+      "knowledge_role": "STYLE_ONLY",
+      "can_be_used_as_fact": false
+    },
+    {
+      "style_type": "POSITIVE",
+      "retrieval_text": "맞습니다.",
+      "pattern_type": "EXTRACTED_FRAME",
+      "evidence_count": 32,
+      "source_entry_count": 15,
+      "style_id": "style_frame_0022",
+      "knowledge_role": "STYLE_ONLY",
+      "can_be_used_as_fact": false
+    },
+    {
+      "style_type": "POSITIVE",
+      "retrieval_text": "{문의 내용}은 사용 가능합니다.",
+      "pattern_type": "EXTRACTED_FRAME",
+      "evidence_count": 22,
+      "source_entry_count": 10,
+      "style_id": "style_frame_0023",
+      "knowledge_role": "STYLE_ONLY",
+      "can_be_used_as_fact": false
+    },
+    {
+      "style_type": "POSITIVE",
+      "retrieval_text": "{문의 내용}은 이용 가능합니다.",
+      "pattern_type": "EXTRACTED_FRAME",
+      "evidence_count": 3,
+      "source_entry_count": 2,
+      "style_id": "style_frame_0024",
+      "knowledge_role": "STYLE_ONLY",
+      "can_be_used_as_fact": false
+    },
+    {
+      "style_type": "NEGATIVE",
+      "retrieval_text": "{문의 내용}은 어려운 것으로 확인됩니다.",
+      "pattern_type": "CORPUS_TEMPLATE",
+      "evidence_count": 705,
+      "source_entry_count": 5,
+      "style_id": "style_frame_0025",
+      "knowledge_role": "STYLE_ONLY",
+      "can_be_used_as_fact": false
+    },
+    {
+      "style_type": "NEGATIVE",
+      "retrieval_text": "{문의 내용}은 지원되지 않습니다.",
+      "pattern_type": "CORPUS_TEMPLATE",
+      "evidence_count": 699,
+      "source_entry_count": 1,
+      "style_id": "style_frame_0026",
+      "knowledge_role": "STYLE_ONLY",
+      "can_be_used_as_fact": false
+    },
+    {
+      "style_type": "NEGATIVE",
+      "retrieval_text": "{문의 내용}은 어렵습니다.",
+      "pattern_type": "EXTRACTED_FRAME",
+      "evidence_count": 31,
+      "source_entry_count": 12,
+      "style_id": "style_frame_0027",
+      "knowledge_role": "STYLE_ONLY",
+      "can_be_used_as_fact": false
+    },
+    {
+      "style_type": "NEGATIVE",
+      "retrieval_text": "죄송하지만 {문의 내용}은 어려운 것으로 확인됩니다.",
+      "pattern_type": "EXTRACTED_FRAME",
+      "evidence_count": 6,
+      "source_entry_count": 3,
+      "style_id": "style_frame_0028",
+      "knowledge_role": "STYLE_ONLY",
+      "can_be_used_as_fact": false
+    },
+    {
+      "style_type": "NEGATIVE",
+      "retrieval_text": "죄송하지만 {문의 내용}은 어렵습니다.",
+      "pattern_type": "EXTRACTED_FRAME",
+      "evidence_count": 4,
+      "source_entry_count": 1,
+      "style_id": "style_frame_0029",
+      "knowledge_role": "STYLE_ONLY",
+      "can_be_used_as_fact": false
+    },
+    {
+      "style_type": "NO_INFORMATION",
+      "retrieval_text": "문의주신 내용은 현재 확인이 어렵습니다.",
+      "pattern_type": "EXTRACTED_FRAME",
+      "evidence_count": 79,
+      "source_entry_count": 36,
+      "style_id": "style_frame_0030",
+      "knowledge_role": "STYLE_ONLY",
+      "can_be_used_as_fact": false
+    },
+    {
+      "style_type": "NO_INFORMATION",
+      "retrieval_text": "정확한 안내가 어려운 점 양해 부탁드립니다.",
+      "pattern_type": "EXTRACTED_FRAME",
+      "evidence_count": 60,
+      "source_entry_count": 20,
+      "style_id": "style_frame_0031",
+      "knowledge_role": "STYLE_ONLY",
+      "can_be_used_as_fact": false
+    },
+    {
+      "style_type": "NO_INFORMATION",
+      "retrieval_text": "현재 확인 가능한 정보가 없어 안내가 어렵습니다.",
+      "pattern_type": "EXTRACTED_FRAME",
+      "evidence_count": 22,
+      "source_entry_count": 9,
+      "style_id": "style_frame_0032",
+      "knowledge_role": "STYLE_ONLY",
+      "can_be_used_as_fact": false
+    },
+    {
+      "style_type": "NO_INFORMATION",
+      "retrieval_text": "죄송하지만 문의주신 내용은 현재 확인이 어렵습니다.",
+      "pattern_type": "EXTRACTED_FRAME",
+      "evidence_count": 20,
+      "source_entry_count": 7,
+      "style_id": "style_frame_0033",
+      "knowledge_role": "STYLE_ONLY",
+      "can_be_used_as_fact": false
+    },
+    {
+      "style_type": "NO_INFORMATION",
+      "retrieval_text": "현재 제공된 정보에서는 확인되지 않습니다.",
+      "pattern_type": "EXTRACTED_FRAME",
+      "evidence_count": 17,
+      "source_entry_count": 9,
+      "style_id": "style_frame_0034",
+      "knowledge_role": "STYLE_ONLY",
+      "can_be_used_as_fact": false
+    },
+    {
+      "style_type": "NO_INFORMATION",
+      "retrieval_text": "현재 제공된 정보에서는 확인이 어렵습니다.",
+      "pattern_type": "EXTRACTED_FRAME",
+      "evidence_count": 5,
+      "source_entry_count": 4,
+      "style_id": "style_frame_0035",
+      "knowledge_role": "STYLE_ONLY",
+      "can_be_used_as_fact": false
+    },
+    {
+      "style_type": "APOLOGY",
+      "retrieval_text": "{어려운 사항}에 대해 양해 부탁드립니다.",
+      "pattern_type": "CORPUS_TEMPLATE",
+      "evidence_count": 4465,
+      "source_entry_count": 1,
+      "style_id": "style_frame_0036",
+      "knowledge_role": "STYLE_ONLY",
+      "can_be_used_as_fact": false
+    },
+    {
+      "style_type": "APOLOGY",
+      "retrieval_text": "죄송합니다.",
+      "pattern_type": "EXTRACTED_FRAME",
+      "evidence_count": 1158,
+      "source_entry_count": 492,
+      "style_id": "style_frame_0037",
+      "knowledge_role": "STYLE_ONLY",
+      "can_be_used_as_fact": false
+    },
+    {
+      "style_type": "APOLOGY",
+      "retrieval_text": "불편을 드려 죄송합니다.",
+      "pattern_type": "EXTRACTED_FRAME",
+      "evidence_count": 405,
+      "source_entry_count": 186,
+      "style_id": "style_frame_0038",
+      "knowledge_role": "STYLE_ONLY",
+      "can_be_used_as_fact": false
+    },
+    {
+      "style_type": "APOLOGY",
+      "retrieval_text": "양해 부탁드립니다.",
+      "pattern_type": "EXTRACTED_FRAME",
+      "evidence_count": 80,
+      "source_entry_count": 49,
+      "style_id": "style_frame_0039",
+      "knowledge_role": "STYLE_ONLY",
+      "can_be_used_as_fact": false
+    },
+    {
+      "style_type": "APOLOGY",
+      "retrieval_text": "안타깝게도 {문의 내용}은 어려운 것으로 확인됩니다.",
+      "pattern_type": "EXTRACTED_FRAME",
+      "evidence_count": 46,
+      "source_entry_count": 20,
+      "style_id": "style_frame_0040",
+      "knowledge_role": "STYLE_ONLY",
+      "can_be_used_as_fact": false
+    },
+    {
+      "style_type": "CLOSING",
+      "retrieval_text": "추가로 궁금하신 사항이 있으시면 말씀해 주세요.",
+      "pattern_type": "EXTRACTED_FRAME",
+      "evidence_count": 12978,
+      "source_entry_count": 494,
+      "style_id": "style_frame_0041",
+      "knowledge_role": "STYLE_ONLY",
+      "can_be_used_as_fact": false
+    },
+    {
+      "style_type": "CLOSING",
+      "retrieval_text": "궁금하신 사항이 있으시면 말씀해 주세요.",
+      "pattern_type": "EXTRACTED_FRAME",
+      "evidence_count": 178,
+      "source_entry_count": 14,
+      "style_id": "style_frame_0042",
+      "knowledge_role": "STYLE_ONLY",
+      "can_be_used_as_fact": false
+    },
+    {
+      "style_type": "WAIT",
+      "retrieval_text": "잠시만 기다려 주세요.",
+      "pattern_type": "EXTRACTED_FRAME",
+      "evidence_count": 4749,
+      "source_entry_count": 246,
+      "style_id": "style_frame_0043",
+      "knowledge_role": "STYLE_ONLY",
+      "can_be_used_as_fact": false
+    },
+    {
+      "style_type": "WAIT",
+      "retrieval_text": "기다려 주셔서 감사합니다.",
+      "pattern_type": "EXTRACTED_FRAME",
+      "evidence_count": 149,
+      "source_entry_count": 73,
+      "style_id": "style_frame_0044",
+      "knowledge_role": "STYLE_ONLY",
+      "can_be_used_as_fact": false
+    },
+    {
+      "style_type": "GREETING",
+      "retrieval_text": "안녕하십니까.",
+      "pattern_type": "EXTRACTED_FRAME",
+      "evidence_count": 389,
+      "source_entry_count": 11,
+      "style_id": "style_frame_0045",
+      "knowledge_role": "STYLE_ONLY",
+      "can_be_used_as_fact": false
+    },
+    {
+      "style_type": "GREETING",
+      "retrieval_text": "안녕하세요.",
+      "pattern_type": "EXTRACTED_FRAME",
+      "evidence_count": 307,
+      "source_entry_count": 7,
+      "style_id": "style_frame_0046",
+      "knowledge_role": "STYLE_ONLY",
+      "can_be_used_as_fact": false
+    },
+    {
+      "style_type": "GREETING",
+      "retrieval_text": "반갑습니다.",
+      "pattern_type": "EXTRACTED_FRAME",
+      "evidence_count": 265,
+      "source_entry_count": 18,
+      "style_id": "style_frame_0047",
+      "knowledge_role": "STYLE_ONLY",
+      "can_be_used_as_fact": false
+    }
+  ]
+}
