@@ -48,10 +48,33 @@ docs/            설계 문서 · 평가 리포트 · 아키텍처 다이어그�
 ```
 
 - 모델: **Gemini 3.5 Flash-Lite** 단일 (temperature 0, 구조화 출력)
-- **A2A**: Product Agent(현서, :9999)·Platform Agent(:9998) — Agent Card + JSON-RPC,
-  실행 `python -m parts.p_part.agents.product_agent_server` / `parts.o_part.agents.platform_agent_server`
-- **MCP**: `parts/p_part/mcp_servers/product_knowledge_server.py` — Live Knowledge (판매자 확인 정보 축적)
 - 상세: `docs/ai_architecture.png`, `docs/EVAL_REPORT.md`, `api/API_GUIDE.md`
+
+## 상품 정보 흐름 — 목데이터가 아닌 실제 입력으로 동작
+
+| 시점 | 경로 | 효과 |
+|---|---|---|
+| 방송 전 | `POST /api/v1/funding-ai/lives/{id}/prepare` — 판매자가 등록한 실제 상품정보 전달 | **활성 상품 KB 즉시 교체** — 그 상품 기준으로 답변 (재학습·재기동 불필요) |
+| 방송 중 | 답변 가능한 질문 | 상품 KB 근거 + 상담사 문체로 실시간 답변 |
+| 방송 중 | 답변 못 한 질문 | 관심사 집계 → 판매자 확인 → **MCP Live Knowledge 등록 시 즉시 답변에 반영** (`add_live_product_fact`) |
+
+- 검색: 기존 규칙표(기본 상품 특화)는 무변경, 규칙 미매칭 시에만 일반 단어 매칭 폴백 발동
+- 한계: 활성 KB 프로세스 전역 1개 (동시 멀티 라이브는 다음 단계)
+
+## A2A Agent 2종
+
+| | Product Agent (심현서) | Platform Agent (박금별) |
+|---|---|---|
+| 포트 | :9999 | :9998 |
+| Agent Card | `/.well-known/agent-card.json` | `/.well-known/agent-card.json` |
+| JSON-RPC | `/a2a/product` | `/a2a/platform` |
+| Skill | `product_question_answering` | `platform_question_answering` |
+| 입력 | text 질문 (상품 질문 가정) | text 질문 (잡담은 자체 IGNORE) |
+| 출력 | grounding_status·answer·source_chunk_ids·unresolved_topics | decision·answer·faq_id·category·strict |
+| 실행 | `python -m parts.p_part.agents.product_agent_server` | `python -m parts.o_part.agents.platform_agent_server` |
+
+- 리포 내부에서는 라우터가 두 파트를 in-process 로 연결 (A2A 서버는 외부 오케스트레이션용)
+- MCP 서버: `parts/p_part/mcp_servers/product_knowledge_server.py` (공식 KB + Live Knowledge)
 
 ## 검증 결과 (2026-09-04)
 
