@@ -163,7 +163,6 @@ class InterestTracker:
 
             topic_data["count"] += 1
 
-            # 실제 시청자 질문 문장을 그대로 저장
             if original_question:
                 question_counts = (
                     topic_data["viewer_questions"]
@@ -212,6 +211,13 @@ class InterestTracker:
         self,
         top_n: int = 5,
     ):
+        """
+        판매자 실시간 관심사 화면용.
+
+        Category 기준으로 정렬하고
+        각 Category의 대표 Topic과 질문을 반환한다.
+        """
+
         rows = []
 
         for (
@@ -308,6 +314,94 @@ class InterestTracker:
 
         return rows[:top_n]
 
+    def get_ranked_topics(
+        self,
+        top_n: int = 2,
+    ):
+        """
+        방송 종료 후 AI 라이브 요약용.
+
+        전체 방송에서 Topic 기준으로
+        가장 많이 발생한 미답변 관심사를 선정한다.
+
+        대표 질문은 AI가 생성하지 않고
+        실제 시청자 질문 중 가장 많이 등장한 문장을 사용한다.
+        """
+
+        rows = []
+
+        for (
+            category,
+            category_data,
+        ) in self.data["categories"].items():
+
+            topics = category_data.get(
+                "topics",
+                {},
+            )
+
+            for (
+                topic_key,
+                topic_data,
+            ) in topics.items():
+
+                (
+                    representative_question,
+                    representative_question_count,
+                ) = self._select_representative_question(
+                    topic_data.get(
+                        "viewer_questions",
+                        {},
+                    )
+                )
+
+                rows.append(
+                    {
+                        "category":
+                            category,
+
+                        "category_name":
+                            CATEGORY_NAMES.get(
+                                category,
+                                category,
+                            ),
+
+                        "topic_key":
+                            topic_key,
+
+                        "topic_name":
+                            topic_data.get(
+                                "topic_name",
+                                TOPIC_NAMES.get(
+                                    topic_key,
+                                    topic_key,
+                                ),
+                            ),
+
+                        "count":
+                            topic_data.get(
+                                "count",
+                                0,
+                            ),
+
+                        "representative_question":
+                            representative_question,
+
+                        "representative_question_count":
+                            representative_question_count,
+                    }
+                )
+
+        rows.sort(
+            key=lambda item: (
+                -item["count"],
+                -item["representative_question_count"],
+                len(item["representative_question"]),
+            )
+        )
+
+        return rows[:top_n]
+
     def print_dashboard(
         self,
         top_n: int = 5,
@@ -347,6 +441,50 @@ class InterestTracker:
                 f"   대표 관심: "
                 f"{row['top_topic_name']} "
                 f"({row['topic_count']}건)"
+            )
+
+            print(
+                f"   대표 질문: "
+                f"{row['representative_question']} "
+                f"({row['representative_question_count']}건)"
+            )
+
+            print("-" * 68)
+
+        print("=" * 68)
+
+    def print_post_live_top_questions(
+        self,
+        top_n: int = 2,
+    ):
+        """
+        방송 종료 시 전체 누적 미답변 관심사 TOP N 출력.
+        """
+
+        rows = self.get_ranked_topics(
+            top_n=top_n,
+        )
+
+        print()
+        print("=" * 68)
+        print("방송 전체 미답변 관심사 TOP 질문")
+        print("=" * 68)
+
+        if not rows:
+            print(
+                "집계된 미답변 상품 질문이 없습니다."
+            )
+            print("=" * 68)
+            return
+
+        for rank, row in enumerate(
+            rows,
+            start=1,
+        ):
+            print(
+                f"{rank}. "
+                f"{row['topic_name']} "
+                f"| {row['count']}건"
             )
 
             print(

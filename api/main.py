@@ -88,22 +88,53 @@ class KnowledgeChunk(BaseModel):
 
 
 class PrepareBody(BaseModel):
+    product_name: str = "상품"
     product_category: str
     knowledge: list[KnowledgeChunk] = Field(min_length=1)
 
 
+def _knowledge_to_md(body: PrepareBody) -> str:
+    """prepare 입력을 P파트 retriever 가 읽는 MD KB 형식으로 변환.
+
+    chunk_id 는 retriever 파서 규격(kb_p_###)으로 정규화하고
+    원본 id 는 source 에 병기해 추적 가능하게 남긴다.
+    """
+    lines = [f"# {body.product_name}", "",
+             f"- product_category: {body.product_category}", "", "---", ""]
+    for i, c in enumerate(body.knowledge, start=1):
+        cid = f"kb_p_{i:03d}"
+        src = (c.source or "판매자 입력").strip()
+        if c.chunk_id and c.chunk_id != cid:
+            src += f" (원본 id: {c.chunk_id})"
+        lines += [f"## {cid} | {c.category.strip()}", "", c.text.strip(), "",
+                  f"- strict: {'true' if c.strict else 'false'}",
+                  f"- source: {src}", "", "---", ""]
+    return "\n".join(lines)
+
+
 @app.post(BASE + "/lives/{live_id}/prepare", dependencies=[Depends(_auth)], tags=["A. 라이브 자동 답변"])
 def prepare(live_id: str, body: PrepareBody):
-    """판매자 상품정보를 색인한다. 색인 전 comments 호출은 409 NOT_PREPARED.
+    """판매자 상품정보를 색인해 **활성 상품 KB 로 교체**한다.
 
-    MVP 참고: 현 단계는 단일 상품(내장 KB) 검증 단계로, 전달된 knowledge 는
-    저장·검증만 하고 답변 근거는 내장 상품 KB 를 사용한다. 멀티 상품 KB 동적
-    교체는 다음 페이즈 (BE 계약은 동일 유지).
+    이후 상품 질문은 여기서 전달된 knowledge 를 근거로 답변한다 (동적 KB —
+    상품이 바뀌면 이 API 만 다시 호출하면 됨). 색인 전 comments 호출은 409.
+    MVP 한계: 활성 KB 는 프로세스 전역 1개 — 동시에 여러 live 를 서로 다른
+    상품으로 돌리려면 프로세스 분리 또는 다음 페이즈의 per-live KB 필요.
     """
+    from parts.p_part import rag_retriever
+
+    RUNTIME_DIR.mkdir(parents=True, exist_ok=True)
+    md_path = RUNTIME_DIR / f"product_{live_id}.md"
+    md_path.write_text(_knowledge_to_md(body), encoding="utf-8")
+    rag_retriever.set_product_md(md_path)
+
     st = _live(live_id)
-    st["product"] = body.model_dump()
+    st["product"] = {"product_name": body.product_name,
+                     "product_category": body.product_category,
+                     "chunks": len(body.knowledge)}
     st["prepared"] = True
-    return {"status": "ready", "live_id": live_id, "chunks": len(body.knowledge)}
+    return {"status": "ready", "live_id": live_id,
+            "product_name": body.product_name, "chunks": len(body.knowledge)}
 
 
 # =========================================================
@@ -144,26 +175,25 @@ def _handled_by(ans) -> str:
 
 
 def _track_unanswered(live_id: str, text: str, ans) -> list[dict]:
-    """P파트 미답변을 현서 analyzer 로 분석해 관심사 집계에 반영. 토픽 목록 반환."""
+    """P파트 미해결 토픽(파트가 이미 분석해 meta 로 전달)을 관심사 집계에 반영."""
     topics: list[dict] = []
-    if ans.part_id == "p_part":
+    unresolved = ans.meta.get("unresolved_topics") or []
+    if ans.part_id == "p_part" and unresolved:
         try:
+            from types import SimpleNamespace
+
             from parts.p_part.interest_tracker import CATEGORY_NAMES, TOPIC_NAMES
-            from parts.p_part.unanswered_analyzer import analyze_unanswered
-            analysis = analyze_unanswered(
-                question=text,
-                grounding_status=ans.meta.get("grounding", "NO_GROUNDED_INFO"),
-                rag_answer=ans.answer_text or "",
+            _tracker(live_id).add_topics(
+                topics=[SimpleNamespace(**t) for t in unresolved],
+                original_question=text,
             )
-            if analysis.topics:
-                _tracker(live_id).add_topics(topics=analysis.topics, original_question=text)
-                topics = [
-                    {"category": CATEGORY_NAMES.get(t.category, t.category),
-                     "topic": TOPIC_NAMES.get(t.topic_key, t.topic_key)}
-                    for t in analysis.topics
-                ]
+            topics = [
+                {"category": CATEGORY_NAMES.get(t["category"], t["category"]),
+                 "topic": TOPIC_NAMES.get(t["topic_key"], t["topic_key"])}
+                for t in unresolved
+            ]
         except Exception:
-            pass  # 분석 실패는 집계만 생략 (답변 흐름에 영향 없음)
+            pass  # 집계 실패는 답변 흐름에 영향 없음
 
     # 반복 미답변 목록 (unanswered) 병합 집계 — 완전 미답변만
     if ans.decision == Decision.UNANSWERABLE:

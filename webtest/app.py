@@ -180,22 +180,21 @@ def _make_alert(nick: str, text: str, ans, partial: bool = False) -> dict:
     rec = {"type": "alert", "ts": time.time(), "nick": nick[:20], "text": text}
     if partial:
         rec["partial"] = True
-    if ans.part_id == "p_part":
+    unresolved = ans.meta.get("unresolved_topics") or []
+    if ans.part_id == "p_part" and unresolved:
         try:
+            from types import SimpleNamespace
+
             from parts.p_part.interest_tracker import CATEGORY_NAMES, TOPIC_NAMES
-            from parts.p_part.unanswered_analyzer import analyze_unanswered
-            analysis = analyze_unanswered(
-                question=text,
-                grounding_status=ans.meta.get("grounding", "NO_GROUNDED_INFO"),
-                rag_answer=ans.answer_text or "",
+            _tracker().add_topics(
+                topics=[SimpleNamespace(**t) for t in unresolved],
+                original_question=text,
             )
-            if analysis.topics:
-                _tracker().add_topics(topics=analysis.topics, original_question=text)
-                rec["topics"] = [
-                    {"category": CATEGORY_NAMES.get(t.category, t.category),
-                     "topic": TOPIC_NAMES.get(t.topic_key, t.topic_key)}
-                    for t in analysis.topics
-                ]
+            rec["topics"] = [
+                {"category": CATEGORY_NAMES.get(t["category"], t["category"]),
+                 "topic": TOPIC_NAMES.get(t["topic_key"], t["topic_key"])}
+                for t in unresolved
+            ]
         except Exception as e:
             rec["analyzer_error"] = str(e)[:150]
     return rec

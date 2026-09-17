@@ -1,19 +1,34 @@
 import json
+import os
+import re
 from typing import Literal
+
 
 from google.genai import types
 from pydantic import BaseModel
 
-from orchestrator import llm
 from parts.p_part.rag_retriever import retrieve
+from parts.p_part.counselor_style_retriever import CounselorStyleRetriever
 
 
 # =========================================================
-# 모델 설정 — 통합 시 변경: 인증·모델 선택을 공용 llm 모듈로 통일
-# (env 로 API 키/Vertex 선택 — Grounding 판정 로직·프롬프트 무변경)
+# Vertex AI 설정
 # =========================================================
+
+# 새 프로젝트 Billing 활성화 전까지는 기존 프로젝트 fallback 사용.
+# 나중에는 환경변수만 바꾸면 코드 수정 없이 전환 가능.
+# 통합 시 변경: 인증·모델 선택을 공용 llm 모듈로 통일
+# (env 로 API 키/Vertex 선택 — Grounding·Style 로직·프롬프트 무변경)
+from orchestrator import llm
 
 MODEL_ID = llm.DEFAULT_MODEL
+
+
+# =========================================================
+# Shared Counselor Style Retriever
+# =========================================================
+
+style_retriever = CounselorStyleRetriever()
 
 
 # =========================================================
@@ -34,13 +49,213 @@ class GroundedAnswer(BaseModel):
 
 
 # =========================================================
-# 질문 → Retrieval → Grounding → Answer
+# 질문 유형 판별
+#
+# Gemini 호출 전에
+# 어떤 종류의 상담 Style Frame을 줄지만 결정한다.
+#
+# 사실 판단은 절대로 여기서 하지 않는다.
+# =========================================================
+
+def detect_question_style_candidates(
+    question: str
+) -> list[str]:
+
+    question = str(
+        question or ""
+    ).strip()
+
+    # -----------------------------------------
+    # 가능 여부 / 지원 여부 질문
+    # -----------------------------------------
+
+    yes_no_patterns = [
+        r"가능",
+        r"되나요",
+        r"돼요",
+        r"됩니까",
+        r"되냐",
+        r"할 수 있",
+        r"지원하",
+        r"지원되",
+        r"있나요",
+        r"있어요",
+        r"있습니까",
+        r"없나요",
+        r"없어요",
+    ]
+
+    if any(
+        re.search(
+            pattern,
+            question,
+            flags=re.IGNORECASE
+        )
+        for pattern in yes_no_patterns
+    ):
+
+        return [
+            "POSITIVE",
+            "NEGATIVE",
+            "NO_INFORMATION",
+            "INFORMATION"
+        ]
+
+    # -----------------------------------------
+    # 일반 정보 질문
+    # -----------------------------------------
+
+    return [
+        "INFORMATION",
+        "CONFIRMATION",
+        "NO_INFORMATION",
+        "APOLOGY"
+    ]
+
+
+# =========================================================
+# Style Frame 검색
+#
+# counselor_style_search.json의 47개 Frame 중
+# 질문에 필요할 가능성이 있는 Style에서
+# 대표 Frame을 가져온다.
+#
+# Gemini 호출 없음.
+# =========================================================
+
+def retrieve_style_frames(
+    question: str,
+    per_style: int = 1
+) -> list[dict]:
+
+    target_styles = (
+        detect_question_style_candidates(
+            question
+        )
+    )
+
+    frames = []
+    used_texts = set()
+
+    for style in target_styles:
+
+        entries = (
+            style_retriever
+            .by_style
+            .get(
+                style,
+                []
+            )
+        )
+
+        count = 0
+
+        for entry in entries:
+
+            text = entry.get(
+                "retrieval_text",
+                ""
+            ).strip()
+
+            if not text:
+                continue
+
+            if text in used_texts:
+                continue
+
+            used_texts.add(
+                text
+            )
+
+            frames.append(
+                {
+                    "style_type":
+                        style,
+
+                    "retrieval_text":
+                        text,
+
+                    "evidence_count":
+                        entry.get(
+                            "evidence_count",
+                            0
+                        )
+                }
+            )
+
+            count += 1
+
+            if count >= per_style:
+                break
+
+    return frames
+
+
+# =========================================================
+# Style Frame → Prompt Text
+# =========================================================
+
+def build_style_text(
+    style_frames: list[dict]
+) -> str:
+
+    if not style_frames:
+
+        return (
+            "- 자연스럽고 짧은 "
+            "상담사 말투로 답변하세요."
+        )
+
+    lines = []
+
+    for frame in style_frames:
+
+        lines.append(
+            f"- [{frame['style_type']}] "
+            f"{frame['retrieval_text']}"
+        )
+
+    return "\n".join(
+        lines
+    )
+
+
+# =========================================================
+# NO_GROUNDED_INFO 기본 답변
+#
+# Product KB 자체가 전혀 검색되지 않은 경우에는
+# Gemini를 호출할 이유가 없으므로 로컬에서 반환한다.
+# =========================================================
+
+def no_grounded_answer():
+
+    return {
+        "grounding_status":
+            "NO_GROUNDED_INFO",
+
+        "source_chunk_ids": [],
+
+        "answer":
+            (
+                "문의주신 내용은 현재 "
+                "제공된 상품정보에서 "
+                "확인이 어렵습니다."
+            )
+    }
+
+
+# =========================================================
+# 질문 → Retrieval → Style Retrieval
+#      → Grounding + Answer
+#
+# Gemini 호출 최대 1회
 # =========================================================
 
 def answer_question(question: str):
 
     # -----------------------------------------
-    # 1. 관련 KB Retrieval
+    # 1. 관련 Product KB Retrieval
+    # Gemini 호출 0회
     # -----------------------------------------
 
     chunks = retrieve(
@@ -48,21 +263,32 @@ def answer_question(question: str):
         top_k=3
     )
 
-    # 검색되는 KB 자체가 없는 경우
+    # Product KB 검색 결과 자체가 없는 경우
+    # Gemini 호출 없이 종료
     if not chunks:
 
-        return {
-            "grounding_status":
-                "NO_GROUNDED_INFO",
-
-            "source_chunk_ids": [],
-
-            "answer":
-                "제공된 상품정보에서 확인되지 않습니다."
-        }
+        return no_grounded_answer()
 
     # -----------------------------------------
-    # 2. Gemini에 전달할 KB 구성
+    # 2. 상담 Style Frame Retrieval
+    # Gemini 호출 0회
+    # -----------------------------------------
+
+    style_frames = (
+        retrieve_style_frames(
+            question=question,
+            per_style=1
+        )
+    )
+
+    style_text = (
+        build_style_text(
+            style_frames
+        )
+    )
+
+    # -----------------------------------------
+    # 3. Gemini에 전달할 Product KB 구성
     # -----------------------------------------
 
     kb_text = "\n\n".join(
@@ -92,7 +318,7 @@ def answer_question(question: str):
     ]
 
     # -----------------------------------------
-    # 3. Grounding 프롬프트
+    # 4. Grounding + Style 통합 Prompt
     # -----------------------------------------
 
     prompt = f"""
@@ -105,6 +331,32 @@ def answer_question(question: str):
 모델이 알고 있는 외부 지식,
 일반적인 제품 지식,
 추측을 사용해서는 안 됩니다.
+
+
+========================================
+[가장 중요한 정보 출처 규칙]
+========================================
+
+아래에는 두 종류의 정보가 제공됩니다.
+
+1. 상품정보 KB
+2. 상담 표현 참고
+
+상품에 관한 사실, 숫자, 기능, 조건, 정책은
+반드시 '상품정보 KB'에서만 가져와야 합니다.
+
+'상담 표현 참고'는
+오직 말투와 문장 구조를 참고하기 위한 자료입니다.
+
+상담 표현 참고에 포함된 문장을
+상품 사실의 근거로 사용해서는 안 됩니다.
+
+상담 표현의 {{확인된 정보}},
+{{안내 정보}}, {{문의 내용}} 같은 표시는
+문장 구조를 보여주기 위한 placeholder입니다.
+
+최종 답변에는 placeholder를 그대로 출력하지 말고,
+상품정보 KB에서 실제로 확인된 내용만 넣으세요.
 
 
 ========================================
@@ -272,26 +524,49 @@ source_chunk_ids에 넣지 마세요.
 
 
 ========================================
-[상태별 답변 방식]
+[상담 말투 적용 규칙]
 ========================================
 
-GROUNDED:
+아래 '상담 표현 참고'는
+K쇼핑 상담 데이터에서 추출한
+상담 표현 Frame입니다.
 
-KB에서 확인되는 정보를 이용하여
-질문에 직접 답하세요.
+이 표현들은 사실 근거가 아닙니다.
 
+먼저 상품정보 KB만으로
+Grounding 상태와 답변 사실을 결정하세요.
 
-PARTIAL_GROUNDED:
+그 다음,
+결정한 Grounding 상태와 답변 내용에 적합한 경우에만
+상담 표현의 문장 구조를 참고하세요.
 
-확인 가능한 부분만 답하고,
-나머지 내용은 상품정보에서 확인되지 않는다고
-명확하게 말하세요.
+GROUNDED인 경우:
+- 확인된 정보를 직접 답하세요.
+- INFORMATION, CONFIRMATION,
+  POSITIVE, NEGATIVE 표현 중
+  상황에 맞는 방식을 참고할 수 있습니다.
 
+PARTIAL_GROUNDED인 경우:
+- 확인 가능한 부분은 자연스럽게 답하세요.
+- 확인되지 않는 부분은
+  상품정보에서 확인하기 어렵다고 명확히 말하세요.
 
-NO_GROUNDED_INFO:
+NO_GROUNDED_INFO인 경우:
+- 새로운 사실을 만들지 마세요.
+- NO_INFORMATION 또는 APOLOGY 계열 표현을 참고하여
+  자연스럽게 안내하세요.
 
-추측하지 말고
-상품정보에서 확인되지 않는다고 판단하세요.
+상담 표현을 억지로 모두 사용할 필요는 없습니다.
+
+같은 의미를 반복하지 마세요.
+
+"잠시만 기다려 주세요",
+"확인 후 연락드리겠습니다",
+"처리해 드리겠습니다"처럼
+실제로 수행하지 않는 행동을 약속하지 마세요.
+
+최종 답변은 가능하면
+한두 문장으로 간결하게 작성하세요.
 
 
 ========================================
@@ -306,10 +581,19 @@ NO_GROUNDED_INFO:
 ========================================
 
 {kb_text}
+
+
+========================================
+[상담 표현 참고 - STYLE ONLY]
+========================================
+
+{style_text}
 """
 
     # -----------------------------------------
-    # 4. Gemini 호출
+    # 5. Gemini 호출
+    #
+    # 질문당 최대 1회
     # -----------------------------------------
 
     response = llm.client().models.generate_content(
@@ -317,6 +601,7 @@ NO_GROUNDED_INFO:
         contents=prompt,
 
         config=types.GenerateContentConfig(
+            # Grounding 안정성을 위해 기존과 동일하게 유지
             temperature=0,
 
             response_mime_type=
@@ -328,7 +613,7 @@ NO_GROUNDED_INFO:
     )
 
     # -----------------------------------------
-    # 5. JSON 변환
+    # 6. JSON 변환
     # -----------------------------------------
 
     result = json.loads(
@@ -336,7 +621,7 @@ NO_GROUNDED_INFO:
     )
 
     # -----------------------------------------
-    # 6. 존재하지 않는 chunk_id 제거
+    # 7. 존재하지 않는 chunk_id 제거
     # -----------------------------------------
 
     result["source_chunk_ids"] = [
@@ -354,7 +639,13 @@ NO_GROUNDED_INFO:
     ]
 
     # -----------------------------------------
-    # 7. NO_GROUNDED_INFO 정규화
+    # 8. NO_GROUNDED_INFO 방어
+    #
+    # 기존처럼 answer 전체를 고정문으로
+    # 덮어쓰지 않는다.
+    #
+    # 그래야 Style RAG가 생성한
+    # 자연스러운 안내 문장을 유지할 수 있다.
     # -----------------------------------------
 
     if (
@@ -362,14 +653,28 @@ NO_GROUNDED_INFO:
         == "NO_GROUNDED_INFO"
     ):
 
-        result["source_chunk_ids"] = []
+        result[
+            "source_chunk_ids"
+        ] = []
 
-        result["answer"] = (
-            "제공된 상품정보에서 확인되지 않습니다."
-        )
+        # 비정상적으로 빈 답변인 경우만 fallback
+        if not str(
+            result.get(
+                "answer",
+                ""
+            )
+        ).strip():
+
+            result[
+                "answer"
+            ] = (
+                "문의주신 내용은 현재 "
+                "제공된 상품정보에서 "
+                "확인이 어렵습니다."
+            )
 
     # -----------------------------------------
-    # 8. 근거 없이 GROUNDED라고 나온 경우 방어
+    # 9. 근거 없이 GROUNDED / PARTIAL이면 방어
     # -----------------------------------------
 
     elif (
@@ -383,14 +688,22 @@ NO_GROUNDED_INFO:
         ]
     ):
 
-        result["grounding_status"] = (
+        result[
+            "grounding_status"
+        ] = (
             "NO_GROUNDED_INFO"
         )
 
-        result["source_chunk_ids"] = []
+        result[
+            "source_chunk_ids"
+        ] = []
 
-        result["answer"] = (
-            "제공된 상품정보에서 확인되지 않습니다."
+        result[
+            "answer"
+        ] = (
+            "문의주신 내용은 현재 "
+            "제공된 상품정보에서 "
+            "확인이 어렵습니다."
         )
 
     return result

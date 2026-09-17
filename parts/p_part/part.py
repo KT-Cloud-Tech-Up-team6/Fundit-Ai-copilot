@@ -1,45 +1,40 @@
-"""P파트: 상품 상담 (RAG 기반 — 심현서 구현).
+"""P파트: 상품 상담 Product Agent (RAG + 상담사 문체 — 심현서 구현).
 
-part.py 는 오케스트레이터 계약(CopilotPart)과 P파트 RAG 파이프라인을 잇는
-어댑터일 뿐이다. Grounding 판정·답변 생성 로직은 rag_answer/rag_retriever 에 있고,
-미답변 관심사 분석·집계는 unanswered_analyzer/interest_tracker 에 있다.
+part.py 는 오케스트레이터 계약(CopilotPart)과 P파트 단일 진입점
+services/product_copilot.process_product_question() 을 잇는 어댑터일 뿐이다.
+검색·Grounding·문체 적용·미답변 분석 로직은 전부 현서 모듈에 있다.
 
 Grounding 상태 → 오케스트레이터 계약 매핑:
-  GROUNDED          → ANSWER (상품 KB 근거 답변)
-  PARTIAL_GROUNDED  → ANSWER (확인 가능한 부분만 답변) + meta.grounding 으로 표시
-                      — 소비자 화면·판매자 알림 분기는 호출 측(webtest 등)이 결정
-  NO_GROUNDED_INFO  → UNANSWERABLE
+  GROUNDED          → ANSWER (상품 KB 근거 + 상담사 문체 답변)
+  PARTIAL_GROUNDED  → ANSWER (확인 가능한 부분만 답변) + meta 로 미해결 토픽 전달
+  NO_GROUNDED_INFO  → UNANSWERABLE (+ meta 로 관심 토픽 전달)
+
+동적 KB: prepare 로 상품이 교체되면 (rag_retriever.set_product_md)
+retrieve 가 호출마다 활성 KB 를 다시 읽으므로 이 어댑터는 수정 없이 동작한다.
 """
 from __future__ import annotations
-
-import json
-from functools import lru_cache
-from pathlib import Path
 
 from shared.part_base import CopilotPart
 from shared.schemas import (
     Comment, Decision, LiveContext, PartAnswer, PartManifest, RouteMatch,
 )
 
-DATA_DIR = Path(__file__).parent / "data"
-
-
-@lru_cache(maxsize=1)
-def load_product() -> dict:
-    return json.loads((DATA_DIR / "product_5454434.json").read_text(encoding="utf-8"))
-
 
 class PPart(CopilotPart):
     part_id = "p_part"
 
     def manifest(self) -> PartManifest:
-        product = load_product()
-        labels = sorted({c["category"] for c in product["knowledge"]})
+        # 활성 KB 기준 카테고리 (상품이 교체돼도 서비스 재기동 시 자동 반영)
+        try:
+            from parts.p_part.rag_retriever import load_chunks
+            labels = sorted({c["category"] for c in load_chunks()})
+        except Exception:
+            labels = []
         return PartManifest(
             part_id=self.part_id,
             description=(
-                f"상품 상담 파트. 판매 상품({product['product_name']})의 성능·사양·"
-                "기능·구성품·사용법·크기·무게·배터리·소음 등 제품 자체에 관한 "
+                "상품 상담 파트. 현재 방송에서 판매 중인 상품 자체의 성능·사양·"
+                "기능·구성품·사용법·크기·무게·배터리·소음·관리 등 제품에 관한 "
                 "질문을 담당한다. 플랫폼 운영(주문·결제·배송·환불·쿠폰) 질문은 "
                 "담당하지 않는다."
             ),
@@ -48,13 +43,17 @@ class PPart(CopilotPart):
         )
 
     def handle(self, comment: Comment, match: RouteMatch, context: LiveContext) -> PartAnswer:
-        from parts.p_part.rag_answer import answer_question
+        from parts.p_part.services.product_copilot import process_product_question
 
-        result = answer_question(comment.text)
+        # 단일 진입점: RAG → Grounding+문체 → (미답변 분석까지) — tracker 집계는
+        # 서빙 레이어(api/webtest)가 meta.unresolved_topics 로 수행한다
+        result = process_product_question(comment.text)
         status = result["grounding_status"]
         meta = {
             "grounding": status,
             "source_chunk_ids": result.get("source_chunk_ids", []),
+            "unresolved_topics": result.get("unresolved_topics", []),
+            "needs_seller_attention": result.get("needs_seller_attention", False),
         }
 
         if status == "NO_GROUNDED_INFO":
