@@ -12,7 +12,7 @@
           "A. 라이브 자동 답변"
         ],
         "summary": "Prepare",
-        "description": "판매자 상품정보를 색인한다. 색인 전 comments 호출은 409 NOT_PREPARED.\n\nMVP 참고: 현 단계는 단일 상품(내장 KB) 검증 단계로, 전달된 knowledge 는\n저장·검증만 하고 답변 근거는 내장 상품 KB 를 사용한다. 멀티 상품 KB 동적\n교체는 다음 페이즈 (BE 계약은 동일 유지).",
+        "description": "판매자 상품정보를 색인해 **활성 상품 KB 로 교체**한다.\n\n이후 상품 질문은 여기서 전달된 knowledge 를 근거로 답변한다 (동적 KB —\n상품이 바뀌면 이 API 만 다시 호출하면 됨). 색인 전 comments 호출은 409.\nMVP 한계: 활성 KB 는 프로세스 전역 1개 — 동시에 여러 live 를 서로 다른\n상품으로 돌리려면 프로세스 분리 또는 다음 페이즈의 per-live KB 필요.",
         "operationId": "prepare_api_v1_funding_ai_lives__live_id__prepare_post",
         "parameters": [
           {
@@ -273,13 +273,146 @@
         }
       }
     },
+    "/api/v1/funding-ai/lives/{live_id}/faq": {
+      "get": {
+        "tags": [
+          "B. 자주 나오는 질문 요약"
+        ],
+        "summary": "Faq",
+        "description": "자주 나오는 질문 누적 목록 (답변 포함).\n\n- 순위: AI 답변 + 판매자 답변 + 미답변 **합산 누적 횟수**\n- 각 항목: 대표질문·건수·답변·답변자(판매자/AI 라이브 매니저)·답변시각\n- 3분 윈도우가 끝날 때마다 그 윈도우 TOP3 신규 질문이 '공통 질문'으로 승격되고,\n  이미 승격된 질문은 다음 윈도우에서 다시 수집되지 않는다 (카운트만 누적)",
+        "operationId": "faq_api_v1_funding_ai_lives__live_id__faq_get",
+        "parameters": [
+          {
+            "name": "live_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Live Id"
+            }
+          },
+          {
+            "name": "top_n",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 10,
+              "title": "Top N"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/funding-ai/lives/{live_id}/faq/{qid}/comments": {
+      "get": {
+        "tags": [
+          "B. 자주 나오는 질문 요약"
+        ],
+        "summary": "Faq Comments",
+        "description": "누적 건수 클릭 → 병합된 원본 채팅 전체 보기.",
+        "operationId": "faq_comments_api_v1_funding_ai_lives__live_id__faq__qid__comments_get",
+        "parameters": [
+          {
+            "name": "live_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Live Id"
+            }
+          },
+          {
+            "name": "qid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Qid"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/funding-ai/lives/{live_id}/unanswered": {
       "get": {
         "tags": [
           "B. 자주 나오는 질문 요약"
         ],
         "summary": "Unanswered",
-        "description": "AI가 답하지 못한 질문을 병합 집계한 목록 — 판매자가 방송에서 직접 답변.",
+        "description": "미답변 질문 창 목록 — 'AI가 자동답변하지 않은 질문 중 상위 누적' + 답변 완료 구분.",
         "operationId": "unanswered_api_v1_funding_ai_lives__live_id__unanswered_get",
         "parameters": [
           {
@@ -298,6 +431,215 @@
             "schema": {
               "type": "integer",
               "default": 10,
+              "title": "Top N"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/funding-ai/lives/{live_id}/unanswered/{qid}": {
+      "get": {
+        "tags": [
+          "B. 자주 나오는 질문 요약"
+        ],
+        "summary": "Unanswered Detail",
+        "description": "미답변 질문 클릭 → 상단: 참고 정보(관련 KB·이미지 자리) / 하단: 상담사 말투 답변 초안.",
+        "operationId": "unanswered_detail_api_v1_funding_ai_lives__live_id__unanswered__qid__get",
+        "parameters": [
+          {
+            "name": "live_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Live Id"
+            }
+          },
+          {
+            "name": "qid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Qid"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/funding-ai/lives/{live_id}/unanswered/{qid}/answer": {
+      "post": {
+        "tags": [
+          "B. 자주 나오는 질문 요약"
+        ],
+        "summary": "Seller Answer",
+        "description": "[답변하기] — 판매자 대표 답변 등록.\n\n① 이 질문 그룹에 대표 답변이 달리고 (집계된 Q&A 에 '판매자' 답변으로 노출)\n② 이후 같은/유사 질문은 LLM 없이 이 답변으로 즉시 응답되며\n③ Live Knowledge(MCP) 에도 등록되어 상품 지식으로 축적된다",
+        "operationId": "seller_answer_api_v1_funding_ai_lives__live_id__unanswered__qid__answer_post",
+        "parameters": [
+          {
+            "name": "live_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Live Id"
+            }
+          },
+          {
+            "name": "qid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Qid"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SellerAnswerBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/funding-ai/lives/{live_id}/summary": {
+      "get": {
+        "tags": [
+          "B. 자주 나오는 질문 요약"
+        ],
+        "summary": "Summary",
+        "description": "방송 전체에서 많이 나온 질문 순위 + 카테고리별 그룹 (펀딩/결제/배송/상품 성능 등).",
+        "operationId": "summary_api_v1_funding_ai_lives__live_id__summary_get",
+        "parameters": [
+          {
+            "name": "live_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Live Id"
+            }
+          },
+          {
+            "name": "top_n",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 15,
               "title": "Top N"
             }
           },
@@ -551,6 +893,11 @@
       },
       "PrepareBody": {
         "properties": {
+          "product_name": {
+            "type": "string",
+            "title": "Product Name",
+            "default": "상품"
+          },
           "product_category": {
             "type": "string",
             "title": "Product Category"
@@ -570,6 +917,21 @@
           "knowledge"
         ],
         "title": "PrepareBody"
+      },
+      "SellerAnswerBody": {
+        "properties": {
+          "answer_text": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 1,
+            "title": "Answer Text"
+          }
+        },
+        "type": "object",
+        "required": [
+          "answer_text"
+        ],
+        "title": "SellerAnswerBody"
       },
       "ValidationError": {
         "properties": {

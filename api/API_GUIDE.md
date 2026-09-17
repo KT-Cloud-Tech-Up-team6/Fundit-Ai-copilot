@@ -94,36 +94,83 @@ FE 반영 규칙:
 
 ---
 
-## 기능 B. 자주 나오는 질문 요약 (Seller Copilot)
+## 기능 B. 자주 나오는 질문 (집계된 Q&A + 미답변 창)
 
-AI가 답하지 못한 질문을 관심 유형별로 묶어 판매자에게 제공한다.
-별도 입력 없음 — 기능 A 처리 과정에서 자동 집계되며, 조회만 하면 된다.
+기능 A 처리 과정에서 자동 집계 — 별도 입력 없이 조회·답변 API만 쓰면 된다.
 
-### B-1. `GET /lives/{live_id}/insights?top_n=5` — 관심사 랭킹
+**집계 규칙**
+- 유사 질문은 3단 병합 (정규화 일치 → 단어 유사도 → 관심 토픽 일치), 대표 질문은 **고객 원문**
+- 순위 = AI 답변 + 판매자 답변 + 미답변 **합산 누적 횟수**
+- **3분 윈도우**가 끝날 때마다 해당 윈도우 TOP3 신규 질문이 '공통 질문'으로 승격.
+  **이미 승격된 질문은 다음 윈도우에서 다시 수집되지 않음** (카운트만 누적)
 
-```json
-{ "status": "ok",
-  "categories": [
-    { "category": "배터리", "count": 2,
-      "top_topic": "배터리 사용시간", "top_topic_count": 2 } ],
-  "top_questions": [
-    { "representative_text": "완충하면 몇분쓸수있어요", "count": 1,
-      "category": "배터리", "topic": "배터리 사용시간" } ] }
-```
-- **대표 질문은 AI 생성이 아니라 실제 고객 원문** (최다 등장, 동률 시 짧은 문장)
-- FE: 카테고리 카드(건수) + 대표 질문 노출, 5초 폴링 권장
-
-### B-2. `GET /lives/{live_id}/unanswered?top_n=10` — 반복 미답변 목록
+### B-1. `GET /lives/{id}/faq?top_n=10` — 집계된 Q&A (판매자 화면 · 시청자 Q&A 버튼 공용)
 
 ```json
-{ "status": "ok",
-  "unanswered": [
-    { "representative_text": "완충하면 몇분쓸수있어요", "count": 2,
-      "examples": ["완충하면 몇 분 쓸 수 있어요?", "완충하면 몇분쓸수있어요"],
-      "topics": [ { "category": "배터리", "topic": "배터리 사용시간" } ] } ] }
+{ "window_sec": 180,
+  "qna": [
+    { "qid": "fq_0002", "representative_text": "타이머 기능 돼요?", "count": 4,
+      "category": "앱·원격제어", "answered_by": "SELLER",
+      "answered_by_label": "판매자", "answered_at": 1789600000.1,
+      "answer": "네, 최대 12시간 예약 타이머가 있습니다.", "promoted": true } ],
+  "current_window": { "window_id": 3, "top3": [ "...같은 형식..." ] } }
 ```
-- 유사 표현은 병합되어 `count` 누적, `examples` 에 원본 최대 5건
-- FE: 반복 횟수 배지 + 원본 펼침 → 판매자가 방송에서 육성 답변
+- FE 카드: 질문 + `count`건 + answer + `answered_by_label` + `answered_at`(→ "1분 전")
+- `answered_by`: `SELLER`(판매자) / `AI`(AI 라이브 매니저) / `NONE`(미답변)
+- 시청자 채팅의 "AI가 자동답변한 채팅입니다" 마커 = 기능 A 응답의 `answer` 존재 여부로 판단
+
+### B-2. `GET /lives/{id}/faq/{qid}/comments` — 누적 건수 클릭 → 원본 채팅 전체 보기
+
+```json
+{ "qid": "fq_0002", "count": 4,
+  "comments": [ { "comment_id": "c2", "text": "예약 타이머 있어요?", "at_ms": 20000 } ] }
+```
+
+### B-3. `GET /lives/{id}/unanswered?top_n=10` — 미답변 질문 창 (질문 요약)
+
+```json
+{ "pending":  [ { "qid": "fq_0002", "representative_text": "...", "count": 3 } ],
+  "answered": [ { "qid": "fq_0007", "...": "판매자 답변 완료 건" } ] }
+```
+- 설명 문구: "AI가 자동답변하지 않은 질문 중 상위 누적된 질문들입니다"
+- `pending` = 답변 대기 / `answered` = 답변 완료(회색 처리 영역)
+
+### B-4. `GET /lives/{id}/unanswered/{qid}` — 질문 클릭 → 참고정보 + 답변 초안
+
+```json
+{ "question": "타이머 기능 돼요?", "count": 3,
+  "reference": {
+    "chunks": [ { "chunk_id": "kb_p_002", "category": "온도 조절", "text": "..." } ],
+    "images": [] },
+  "draft": "문의주신 예약 타이머 기능은 현재 확인이 어렵습니다. [판매자 확인 필요: 예약 타이머 탑재 여부]",
+  "seller_answer": null }
+```
+- 상단: `reference` (관련 KB 청크 — 근거가 아니라 판매자 참고용, `images`는 상품 이미지 URL BE 연결 자리)
+- 하단: `draft` — **상담사 말투 답변 초안**. 확인 안 된 사실은 `[판매자 확인 필요: ...]`로 비워둠 (임의 생성 금지)
+
+### B-5. `POST /lives/{id}/unanswered/{qid}/answer` — [답변하기]
+
+요청: `{ "answer_text": "네, 최대 12시간 예약 타이머가 있습니다." }`
+
+등록되면 세 가지가 일어난다:
+1. 집계된 Q&A에 **판매자 대표 답변**으로 노출
+2. **이후 같은/유사 질문은 LLM 없이 이 답변으로 즉시 자동 응답** (`grounding: "SELLER_CONFIRMED"`)
+3. Live Knowledge(MCP)에 등록 → 상품 지식으로 축적 (응답의 `live_knowledge_registered`)
+
+### B-6. `GET /lives/{id}/summary?top_n=15` — 방송 종료 후 요약
+
+```json
+{ "total_questions": 132, "unique_questions": 41,
+  "top_questions": [ "...합산 누적 TOP15..." ],
+  "by_category": {
+    "펀딩": [ "..." ], "결제": [ "..." ],
+    "제품 성능 및 사양": [ "..." ], "앱·원격제어": [ "..." ] } }
+```
+- 카테고리 = 현서 체계 그대로 (O 8종 한글화: 펀딩·결제·배송·취소환불·리워드·계정앱·쿠폰이벤트·방송 / P 상품 카테고리·관심 토픽)
+
+### B-7. `GET /lives/{id}/insights?top_n=5` — 관심 토픽 랭킹 (보조)
+
+미답변 질문의 관심 유형(카테고리·Topic) 단위 랭킹 — 질문 단위(B-1~6)와 별도로 토픽 관점 요약이 필요할 때 사용.
 
 ---
 
