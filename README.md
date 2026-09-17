@@ -115,11 +115,23 @@ python -m eval.p_part.mvp_replay_test # P 리플레이 (100건)
 | `feat/kshopping-style` | **심현서** | K쇼핑 상담사 학습 데이터 — `parts/p_part/data/kshopping_style/` + 구축 파이프라인(`scripts/`) + 문체 검색기. 코퍼스는 전 상품 공통 고정 |
 | `feat/a2a-agent` | 참고용 | 현서 a2a 원본 사본 (읽기용) |
 
-**규칙**
-- 모든 브랜치는 현재 **최신 main 과 동일 시점**으로 맞춰져 있음 — 각자 자기 브랜치에서 `git pull` 후 시작
-- **자기 영역 폴더만 수정** — 타 영역·`shared/`·`orchestrator/` 변경은 상대방 확인 후
-  (`.github/CODEOWNERS` 로 PR 리뷰어 자동 지정됨)
-- 작업 흐름: 자기 브랜치에서 커밋 → main 으로 머지 (충돌 최소화: 폴더가 겹치지 않음)
+**작업 흐름 — 평소에는 main 하나로 (매번 병합하지 않는다)**
+
+```
+평소 (자기 영역 폴더만 수정할 때) — 브랜치·병합 불필요
+  git checkout main
+  git pull
+  ... parts/p_part/ (현서) 또는 parts/o_part/·api/·webtest/ (금별) 안에서 작업 ...
+  git commit && git push
+  → 영역 폴더가 서로 안 겹쳐서 충돌이 나지 않는다
+
+큰 변경·실험·공용 영역(shared/·orchestrator/) 건드릴 때만
+  main 에서 feat/* 브랜치 분기 → PR → CODEOWNERS 리뷰 → main 머지
+```
+
+- **main = 항상 최신 통합본.** 시작 전 `git pull` 만 지키면 된다
+- feat/p-part 등 파트 브랜치는 위 "큰 변경" 용도의 상시 브랜치 (현재 전부 main 과 동일 시점)
+- 타 영역 폴더는 수정하지 않는다 — 필요하면 상대에게 요청 (`.github/CODEOWNERS` 가 PR 에서 강제)
 - 파트 등록은 `CopilotService(parts=[OPart(), PPart()])` 한 줄
 
 ## 문서
