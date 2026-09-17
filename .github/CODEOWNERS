@@ -4,9 +4,18 @@
 # 기본 소유자 (공용 구조·통합)
 *                   @byeol-lab
 
-# P파트 — 상품 RAG · 상담사 문체 · 관심사 분석 · A2A Product Agent · MCP (심현서)
+# P파트 — 상품 RAG · 관심사 분석 · A2A Product Agent · MCP (심현서)
 /parts/p_part/      @hyeonseoshim
 /eval/p_part/       @hyeonseoshim
+
+# K쇼핑 상담사 학습 데이터 영역 — 문체 코퍼스·구축 파이프라인·문체 검색기 (심현서 구축)
+# 상담 문체 코퍼스는 전 상품 공통 고정 — 임의 수정 금지 (인수인계 원칙)
+/parts/p_part/data/kshopping_style/       @hyeonseoshim
+/parts/p_part/scripts/                    @hyeonseoshim
+/parts/p_part/counselor_style_retriever.py @hyeonseoshim
+
+# K쇼핑 실데이터 평가셋 (고객 질문 선별·검수 — 향후 편입 위치) — 공동
+/eval/kshopping/    @byeol-lab @hyeonseoshim
 
 # O파트 — 플랫폼·펀딩 FAQ · A2A Platform Agent (박금별)
 /parts/o_part/      @byeol-lab

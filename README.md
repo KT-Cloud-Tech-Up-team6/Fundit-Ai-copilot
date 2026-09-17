@@ -89,6 +89,7 @@ python -m eval.p_part.mvp_replay_test # P 리플레이 (100건)
 | `feat/p-part` | **심현서 전용** | `parts/p_part/` + `eval/p_part/` (상품 RAG·문체·관심사·A2A·MCP) |
 | `feat/o-part` | **박금별 전용** | `parts/o_part/` + `eval/o_part/` + 공용(api·webtest·docs) |
 | `feat/webtest` | 박금별 | 라이브 테스트 환경 |
+| `feat/kshopping-style` | **심현서** | K쇼핑 상담사 학습 데이터 — `parts/p_part/data/kshopping_style/` + 구축 파이프라인(`scripts/`) + 문체 검색기. 코퍼스는 전 상품 공통 고정 |
 | `feat/a2a-agent` | 참고용 | 현서 a2a 원본 사본 (읽기용) |
 
 **규칙**
