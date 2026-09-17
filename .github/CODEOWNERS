@@ -1,0 +1,17 @@
+# 영역 소유권 — 각자 자기 영역만 수정한다. 타 영역 변경은 소유자 리뷰 필요.
+# (GitHub 이 PR 에서 자동으로 소유자를 리뷰어로 지정한다)
+
+# 기본 소유자 (공용 구조·통합)
+*                   @byeol-lab
+
+# P파트 — 상품 RAG · 상담사 문체 · 관심사 분석 · A2A Product Agent · MCP (심현서)
+/parts/p_part/      @hyeonseoshim
+/eval/p_part/       @hyeonseoshim
+
+# O파트 — 플랫폼·펀딩 FAQ · A2A Platform Agent (박금별)
+/parts/o_part/      @byeol-lab
+/eval/o_part/       @byeol-lab
+
+# 파트 간 계약 — 변경 시 두 사람 모두 리뷰
+/shared/            @byeol-lab @hyeonseoshim
+/orchestrator/      @byeol-lab @hyeonseoshim

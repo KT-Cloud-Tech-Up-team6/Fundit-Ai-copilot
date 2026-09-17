@@ -81,17 +81,21 @@ python -m eval.p_part.mvp_replay_test # P 리플레이 (100건)
 라이브 테스트: 접속 → 비밀번호 입장 → [영상 업로드/URL] → [방송 시작] →
 채팅이 실시간 분류·응답되고, 종료 후 `python -m webtest.report <url> <pw>` 로 검증 리포트 생성.
 
-## 브랜치 전략
+## 브랜치 전략 — 영역 소유권
 
-| 브랜치 | 용도 |
-|---|---|
-| `main` | 통합 브랜치 — 파트 브랜치 머지 + 통합 글루(어댑터·라우터 위임) |
-| `feat/p-part` | P파트 작업 (심현서) |
-| `feat/o-part` | O파트 + 공용 구조 작업 (박금별) |
-| `feat/webtest` | 라이브 테스트 환경 |
+| 브랜치 | 소유자 | 작업 범위 |
+|---|---|---|
+| `main` | 공동 (머지만) | 통합 결과 — 직접 커밋 금지, 파트 브랜치에서 머지 |
+| `feat/p-part` | **심현서 전용** | `parts/p_part/` + `eval/p_part/` (상품 RAG·문체·관심사·A2A·MCP) |
+| `feat/o-part` | **박금별 전용** | `parts/o_part/` + `eval/o_part/` + 공용(api·webtest·docs) |
+| `feat/webtest` | 박금별 | 라이브 테스트 환경 |
+| `feat/a2a-agent` | 참고용 | 현서 a2a 원본 사본 (읽기용) |
 
-- 파트 추가/수정은 자기 브랜치의 `parts/<파트>/` 안에서 → main으로 머지
-- `shared/` 변경은 팀 합의 후에만
+**규칙**
+- 모든 브랜치는 현재 **최신 main 과 동일 시점**으로 맞춰져 있음 — 각자 자기 브랜치에서 `git pull` 후 시작
+- **자기 영역 폴더만 수정** — 타 영역·`shared/`·`orchestrator/` 변경은 상대방 확인 후
+  (`.github/CODEOWNERS` 로 PR 리뷰어 자동 지정됨)
+- 작업 흐름: 자기 브랜치에서 커밋 → main 으로 머지 (충돌 최소화: 폴더가 겹치지 않음)
 - 파트 등록은 `CopilotService(parts=[OPart(), PPart()])` 한 줄
 
 ## 문서
