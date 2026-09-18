@@ -87,39 +87,66 @@ def _qwords(text: str):
     return set(re.findall(r"[가-힣a-zA-Z0-9]{2,}", text.lower()))
 
 
-def _faq_lookup(st: dict, text: str, topics: list | None = None):
-    """유사 질문 병합 탐색 — ① 정규화 키 일치 ② 단어 자카드 ≥0.6 ③ 관심 토픽 일치.
+def _faq_lookup(st: dict, text: str, topics: list | None = None,
+                category: str | None = None):
+    """유사 질문 병합 탐색.
 
-    한 번 병합된 표현은 alias 로 등록되어 이후 즉시 같은 그룹으로 붙는다.
+    질문 분류 후에는 같은 카테고리 안에서만 유사 질문을 병합한다.
+    분류 전 판매자 확정 답변 조회는 기존처럼 전체 FAQ를 대상으로 한다.
     """
-    key = _qkey(text)
-    main = st.setdefault("faq_alias", {}).get(key, key)
-    if main in st["faq"]:
-        return main, st["faq"][main]
+    from difflib import SequenceMatcher
 
+    key = _qkey(text)
+    normalized = key.lower()
+
+    def same_category(e: dict) -> bool:
+        return category is None or (e.get("category") or "기타") == (category or "기타")
+
+    # 동일 문장 / 기존 예시와 정확히 같은 질문
+    for k, e in st["faq"].items():
+        if not same_category(e):
+            continue
+        candidates = [e["representative_text"], *e.get("examples", [])]
+        if any(_qkey(q).lower() == normalized for q in candidates):
+            return k, e
+
+    # 유사 질문 병합
     tw = _qwords(text)
     if tw:
-        best_key, best_j = None, 0.0
+        best_key, best_score = None, 0.0
         for k, e in st["faq"].items():
-            ew = _qwords(e["representative_text"])
-            if not ew:
+            if not same_category(e):
                 continue
-            j = len(tw & ew) / (len(tw | ew) or 1)
-            if j > best_j:
-                best_key, best_j = k, j
-        if best_key and best_j >= 0.6:
-            st["faq_alias"][key] = best_key
+
+            ew = _qwords(e["representative_text"])
+            jaccard = len(tw & ew) / (len(tw | ew) or 1) if ew else 0.0
+            ratio = SequenceMatcher(
+                None,
+                text.lower(),
+                e["representative_text"].lower(),
+            ).ratio()
+            score = max(jaccard, ratio)
+
+            if score > best_score:
+                best_key, best_score = k, score
+
+        if best_key and best_score >= 0.55:
             return best_key, st["faq"][best_key]
 
+    # 미답변 질문은 unresolved topic도 병합 기준으로 사용
     if topics:
         tset = {(t.get("category"), t.get("topic")) for t in topics}
         for k, e in st["faq"].items():
+            if not same_category(e):
+                continue
             if e["handled_by"] == "UNANSWERABLE" and e["topics"]:
                 eset = {(t.get("category"), t.get("topic")) for t in e["topics"]}
                 if tset & eset:
-                    st["faq_alias"][key] = k
                     return k, e
-    return key, None
+
+    # 신규 그룹은 카테고리까지 포함해 서로 다른 카테고리 충돌 방지
+    new_key = f"{category or '기타'}::{normalized}" if category else key
+    return new_key, None
 
 
 def _promote_windows(st: dict) -> None:
@@ -150,13 +177,16 @@ def _record_question(st: dict, text: str, at_ms: int, *,
     - 3분 윈도우(win)별 카운트를 함께 유지 → 윈도우 TOP3 선정에 사용
     - 대표 질문은 실제 고객 원문 중 가장 짧은 문장
     """
-    key, e = _faq_lookup(st, text, topics)   # 유사 질문 3단 병합
+    key, e = _faq_lookup(
+        st, text, topics=topics, category=category
+    )
     win = max(0, at_ms) // WINDOW_MS
     if e is None:
         st["faq_seq"] += 1
         e = st["faq"][key] = {
             "qid": f"fq_{st['faq_seq']:04d}",
             "representative_text": text, "count": 0, "examples": [],
+            "question_counts": {},
             "category": category, "handled_by": handled_by,
             "ai_answer": None, "ai_answer_at": None,
             "seller_answer": None, "seller_answer_at": None, "draft": None,
@@ -166,6 +196,8 @@ def _record_question(st: dict, text: str, at_ms: int, *,
             "originals": [],
         }
     e["count"] += 1
+    counts = e.setdefault("question_counts", {})
+    counts[text] = counts.get(text, 0) + 1
     e["windows"][win] = e["windows"].get(win, 0) + 1
     st["last_win"] = max(st["last_win"], win)
     e["originals"] = (e["originals"] + [
@@ -173,8 +205,12 @@ def _record_question(st: dict, text: str, at_ms: int, *,
     ])[-200:]
     if text not in e["examples"]:
         e["examples"] = (e["examples"] + [text])[-5:]
-    if len(text) < len(e["representative_text"]):
-        e["representative_text"] = text
+    # 실제 시청자 질문 중 최빈 질문을 대표 질문으로 사용.
+    # 빈도가 같으면 더 짧은 실제 질문을 선택한다.
+    e["representative_text"] = sorted(
+        counts.items(),
+        key=lambda item: (-item[1], len(item[0]), item[0]),
+    )[0][0]
     if ai_answer and not e["ai_answer"]:
         e["ai_answer"] = ai_answer
         e["ai_answer_at"] = time.time()
@@ -521,18 +557,67 @@ def analyze_comments(live_id: str, body: CommentsBody):
             if ans.meta.get("grounding") == "PARTIAL_GROUNDED":
                 unresolved = _track_unanswered(live_id, c.text, ans)
                 q["unresolved_topics"] = unresolved
-            category = (q["category"] if q["handled_by"] == "PRODUCT"
-                        else O_LABEL_NAMES.get(q["category"], q["category"]))
-            rec = _record_question(st, c.text, c.at_ms, handled_by=q["handled_by"],
-                                   category=category, ai_answer=ans.answer_text,
-                                   topics=unresolved, comment_id=c.comment_id)
+            if q["handled_by"] == "PRODUCT":
+                # 라우터 label보다 실제 답변 근거로 사용된 KB chunk의
+                # category를 우선 사용한다.
+                category = q["category"]
+                source_ids = ans.meta.get("source_chunk_ids") or []
+
+                if source_ids:
+                    try:
+                        from parts.p_part.rag_retriever import load_chunks
+
+                        chunk_categories = {
+                            chunk["chunk_id"]: chunk["category"]
+                            for chunk in load_chunks()
+                        }
+
+                        for source_id in source_ids:
+                            if source_id in chunk_categories:
+                                category = chunk_categories[source_id]
+                                break
+                    except Exception:
+                        pass
+            else:
+                category = O_LABEL_NAMES.get(
+                    q["category"],
+                    q["category"],
+                )
+
+            q["category"] = category
+
+            rec = _record_question(
+                st,
+                c.text,
+                c.at_ms,
+                handled_by=q["handled_by"],
+                category=category,
+                ai_answer=ans.answer_text,
+                topics=unresolved,
+                comment_id=c.comment_id,
+            )
         else:  # UNANSWERABLE — 시청자 무노출, 미답변 창·집계로
             topics = _track_unanswered(live_id, c.text, ans)
             q["topics"] = topics
-            category = (topics[0]["category"] if topics
-                        else O_LABEL_NAMES.get(q["category"], q["category"]) or "기타")
-            rec = _record_question(st, c.text, c.at_ms, handled_by="UNANSWERABLE",
-                                   category=category, topics=topics, comment_id=c.comment_id)
+            category = (
+                topics[0]["category"]
+                if topics
+                else O_LABEL_NAMES.get(
+                    q["category"],
+                    q["category"],
+                ) or "기타"
+            )
+            q["category"] = category
+
+            rec = _record_question(
+                st,
+                c.text,
+                c.at_ms,
+                handled_by="UNANSWERABLE",
+                category=category,
+                topics=topics,
+                comment_id=c.comment_id,
+            )
         q["qid"] = rec["qid"]
         questions.append(q)
 
@@ -584,10 +669,20 @@ def faq(live_id: str, top_n: int = 10):
     cur = st["last_win"]
     cur_top3 = sorted([e for e in st["faq"].values() if e["windows"].get(cur, 0) > 0],
                       key=lambda e: -e["windows"].get(cur, 0))[:3]
+    by_category: dict[str, list] = {}
+    for e in entries:
+        by_category.setdefault(
+            e["category"] or "기타", []
+        ).append(_faq_row(e))
+
     return {
         "status": "ok", "live_id": live_id,
         "window_sec": WINDOW_MS // 1000,
         "qna": [_faq_row(e) for e in entries[:top_n]],
+        "top2_questions": [_faq_row(e) for e in entries[:2]],
+        "by_category": by_category,
+        "total_question_count": sum(e["count"] for e in entries),
+        "total_group_count": len(entries),
         "current_window": {"window_id": cur, "starts_at_ms": cur * WINDOW_MS,
                            "top3": [_faq_row(e, win=cur) for e in cur_top3]},
     }
@@ -718,6 +813,17 @@ def summary(live_id: str, top_n: int = 15):
     entries = sorted(st["faq"].values(), key=lambda e: -e["count"])
     top = [_faq_row(e) for e in entries[:top_n]]
 
+    top2_qa = [
+        {
+            "question": e["representative_text"],
+            "answer": e["seller_answer"] or e["ai_answer"],
+            "count": e["count"],
+            "category": e["category"] or "기타",
+            "answered_by": _answered_by(e),
+        }
+        for e in entries[:2]
+    ]
+
     by_cat: dict[str, list] = {}
     for e in entries:
         by_cat.setdefault(e["category"] or "기타", []).append(_faq_row(e))
@@ -738,6 +844,7 @@ def summary(live_id: str, top_n: int = 15):
             "total_questions": sum(e["count"] for e in entries),
             "unique_questions": len(entries),
             "top_questions": top,
+            "top2_qa": top2_qa,
             "by_category": by_category,
             "verification_posts": verification_posts}
 
