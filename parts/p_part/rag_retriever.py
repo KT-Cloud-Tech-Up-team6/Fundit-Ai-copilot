@@ -755,6 +755,14 @@ def _generic_retrieve(question, chunks, top_k):
 
     question_numbers = set(extract_numbers(question))
 
+    # 조사·어미가 붙은 한국어 질문 대응: 2글자 이상 접두 조각도 부분 일치로 인정
+    # (예: "한정이에요" → "한정", "색상은" → "색상")
+    def fragments(word: str):
+        out = {word}
+        for cut in range(len(word) - 1, 1, -1):
+            out.add(word[:cut])
+        return out
+
     scored = []
     for chunk in chunks:
         normalized_text = normalize(chunk["text"])
@@ -762,14 +770,18 @@ def _generic_retrieve(question, chunks, top_k):
 
         score = 0
         for word in question_words:
-            if word in normalized_category:
-                score += 8
-            elif word in normalized_text:
-                score += 4
+            if word in normalized_category or word in normalized_text:
+                score += 8 if word in normalized_category else 4
+                continue
+            # 부분 일치 (조사 제거 효과) — 온전 일치보다 낮은 점수
+            for frag in fragments(word):
+                if len(frag) >= 2 and (frag in normalized_category or frag in normalized_text):
+                    score += 5 if frag in normalized_category else 3
+                    break
         if question_numbers & set(extract_numbers(chunk["text"])):
             score += 5
 
-        if score >= 8:
+        if score >= 6:
             scored.append((score, chunk))
 
     scored.sort(key=lambda item: item[0], reverse=True)

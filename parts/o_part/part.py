@@ -28,18 +28,43 @@ REPHRASE_PROMPT = """다음 안내 문구를 라이브 방송 채팅 답글 톤�
 _NUM_RE = re.compile(r"\d+")
 
 
+# 상품별 리워드 실데이터(가격·수량·옵션)를 담고 있어, 프로젝트가 바뀌면
+# 오답이 되는 FAQ. prepare 로 실제 리워드가 등록되면 비활성화하고 P파트(상품 KB)가
+# 답하게 한다. 등록이 없으면 기존대로 사용 (단일 상품 PoC 호환).
+PRODUCT_SPECIFIC_FAQ_IDS = {"faq_rw_002", "faq_rw_004"}
+
+_reward_data_registered = False
+
+
+def set_reward_data_registered(flag: bool) -> None:
+    """prepare 에서 rewards 가 전달되면 True — 상품별 리워드 FAQ 를 끈다."""
+    global _reward_data_registered
+    _reward_data_registered = flag
+    kb.load_faq.cache_clear()
+
+
+def active_faq() -> dict:
+    faq = kb.load_faq()
+    if not _reward_data_registered:
+        return faq
+    return {k: v for k, v in faq.items() if k not in PRODUCT_SPECIFIC_FAQ_IDS}
+
+
 class OPart(CopilotPart):
     part_id = "o_part"
 
     def manifest(self) -> PartManifest:
-        faq = kb.load_faq()
+        faq = active_faq()
         return PartManifest(
             part_id=self.part_id,
             description=(
                 "플랫폼·펀딩 운영 응대 파트. 방송 시간/다시보기, 펀딩 방식/마감/달성률, "
                 "결제 수단·시점, 배송 정책, 취소·환불, 리워드 옵션, 가입·로그인·알림, "
                 "쿠폰·적립금 등 플랫폼 정책에 관한 질문을 담당한다. "
-                "제품 자체의 성능·스펙·기능 질문은 담당하지 않는다."
+                "제품 자체의 성능·스펙·기능 질문은 담당하지 않는다. "
+                "또한 이 방송에서 판매 중인 특정 리워드의 가격·한정 수량·구성품·"
+                "옵션 종류처럼 프로젝트마다 값이 다른 질문도 담당하지 않는다 "
+                "(리워드 신청·변경 '절차'만 담당). 해당 질문은 상품 파트가 답한다."
             ),
             labels=sorted({f["label"] for f in faq.values()}),
             faq_index=[
@@ -53,7 +78,7 @@ class OPart(CopilotPart):
         )
 
     def handle(self, comment: Comment, match: RouteMatch, context: LiveContext) -> PartAnswer:
-        faq = kb.load_faq().get(match.faq_id or "")
+        faq = active_faq().get(match.faq_id or "")
         if faq is None:
             return PartAnswer(decision=Decision.UNANSWERABLE, part_id=self.part_id)
 

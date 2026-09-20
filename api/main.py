@@ -1,6 +1,6 @@
 """Fundit AI Copilot — BE 연동 API (v1).
 
-Base Path: /api/v1/funding-ai
+Base Path: /api/v1/ai
 인증: env API_TOKEN 설정 시 Authorization: Bearer {token} 필수 (미설정이면 개발 모드로 통과)
 
 기능 A. 라이브 자동 답변
@@ -35,7 +35,7 @@ from parts.o_part.part import OPart
 from parts.p_part.part import PPart
 from shared.schemas import Comment, Decision, LiveContext
 
-BASE = "/api/v1/funding-ai"
+BASE = "/api/v1/ai"
 RUNTIME_DIR = Path(os.getenv("RUNTIME_DIR", Path(__file__).parent / "runtime"))
 MAX_BATCH = 50
 WINDOW_MS = 3 * 60 * 1000  # 자주 나오는 질문 집계 윈도우 = 3분
@@ -62,14 +62,15 @@ _lives: dict[str, dict] = {}
 def _auth(authorization: str | None = Header(default=None)) -> None:
     token = os.getenv("API_TOKEN")
     if token and authorization != f"Bearer {token}":
-        raise HTTPException(status_code=401, detail={"code": "UNAUTHORIZED"})
+        raise HTTPException(status_code=401, detail={
+            "code": "UNAUTHORIZED", "message": "인증 토큰이 유효하지 않습니다.", "detail": None})
 
 
 def _live(live_id: str) -> dict:
     if live_id not in _lives:
         _lives[live_id] = {
             "prepared": False, "product": None, "qseq": 0,
-            "tracker": None,
+            "tracker": None, "context": None,
             # 질문 집계 저장소 — 답변된 질문 + 미답변 + 판매자 답변 전부 누적
             "faq": {}, "faq_seq": 0, "last_win": 0,
         }
@@ -194,6 +195,11 @@ def _answered_by(e: dict) -> str:
 
 
 def _faq_row(e: dict, win: int | None = None) -> dict:
+    """집계 1건. BE chat.live_question_summaries 저장용 필드를 함께 제공한다.
+
+    매핑: summary_text = representative_text / related_question_count = count
+          is_pinned 후보 = promoted (윈도우 TOP3 승격분)
+    """
     by = _answered_by(e)
     row = {
         "qid": e["qid"], "representative_text": e["representative_text"],
@@ -205,6 +211,10 @@ def _faq_row(e: dict, win: int | None = None) -> dict:
         "answered_at": e["seller_answer_at"] or e["ai_answer_at"],  # epoch — FE 'n분 전'
         "promoted": e.get("promoted", False),
         "examples": e["examples"], "topics": e["topics"],
+        # --- BE 저장 매핑 (chat.live_question_summaries) ---
+        "summary_text": e["representative_text"],
+        "related_question_count": e["count"],
+        "is_pinned": e.get("promoted", False),
     }
     if win is not None:
         row["window_count"] = e["windows"].get(win, 0)
@@ -233,10 +243,63 @@ class KnowledgeChunk(BaseModel):
     source: str | None = None
 
 
+class RewardOptionGroupIn(BaseModel):
+    """project-service reward_option_groups + reward_option_values."""
+    name: str                       # 예: 색상, 사이즈
+    values: list[str] = []          # 예: ["화이트", "블랙"]
+
+
+class RewardIn(BaseModel):
+    """project-service rewards 1행에 대응 (리워드 문의 답변 근거)."""
+    reward_display_code: str | None = None   # R0000001
+    name: str
+    description: str | None = None
+    price: int | None = None
+    is_limited: bool = False
+    quantity: int | None = None              # is_limited=true 일 때만
+    is_early_bird: bool = False
+    option_groups: list[RewardOptionGroupIn] = []
+
+
 class PrepareBody(BaseModel):
-    product_name: str = "상품"
-    product_category: str
+    """LIVE 전 상품정보 색인.
+
+    BE project-service 의 projects / rewards 구조를 그대로 받는다.
+    rewards 는 전달하면 자동으로 KB 청크로 변환되어 리워드 문의에도 답변 가능.
+    """
+    product_name: str = "상품"                    # projects.title
+    product_category: str                         # category_major (또는 major/minor 결합)
+    category_minor: str | None = None
+    project_display_code: str | None = None       # F0000001 — 추적용
+    project_public_id: str | None = None          # projects.public_id (UUID)
     knowledge: list[KnowledgeChunk] = Field(min_length=1)
+    rewards: list[RewardIn] = []
+
+
+def _reward_to_chunks(r: RewardIn) -> list[tuple[str, str]]:
+    """리워드 1건 → (category, text) 청크 목록. 사실만 서술, 생성 금지."""
+    label = f"리워드 {r.name}" + (f"({r.reward_display_code})" if r.reward_display_code else "")
+    out: list[tuple[str, str]] = []
+
+    basic = [f"{label}의"]
+    if r.price is not None:
+        basic.append(f"가격은 {r.price:,}원이며")
+    basic.append("얼리버드 리워드입니다." if r.is_early_bird else "일반 리워드입니다.")
+    out.append(("리워드 구성", " ".join(basic)))
+
+    if r.description:
+        out.append(("리워드 구성", f"{label} 구성 설명: {r.description.strip()}"))
+
+    if r.is_limited and r.quantity is not None:
+        out.append(("리워드 수량", f"{label}은 {r.quantity:,}개 한정 수량입니다."))
+    elif not r.is_limited:
+        out.append(("리워드 수량", f"{label}은 수량 제한이 없습니다."))
+
+    for g in r.option_groups:
+        if g.values:
+            out.append(("리워드 옵션",
+                        f"{label}의 {g.name} 옵션은 {', '.join(g.values)} 중에서 선택할 수 있습니다."))
+    return out
 
 
 def _knowledge_to_md(body: PrepareBody) -> str:
@@ -244,17 +307,34 @@ def _knowledge_to_md(body: PrepareBody) -> str:
 
     chunk_id 는 retriever 파서 규격(kb_p_###)으로 정규화하고
     원본 id 는 source 에 병기해 추적 가능하게 남긴다.
+    rewards 가 있으면 리워드 사실 청크를 이어서 추가한다.
     """
-    lines = [f"# {body.product_name}", "",
-             f"- product_category: {body.product_category}", "", "---", ""]
-    for i, c in enumerate(body.knowledge, start=1):
-        cid = f"kb_p_{i:03d}"
+    category = body.product_category
+    if body.category_minor:
+        category = f"{category} > {body.category_minor}"
+    lines = [f"# {body.product_name}", ""]
+    if body.project_display_code:
+        lines.append(f"- project_code: {body.project_display_code}")
+    lines += [f"- product_category: {category}", "", "---", ""]
+
+    idx = 0
+    for c in body.knowledge:
+        idx += 1
+        cid = f"kb_p_{idx:03d}"
         src = (c.source or "판매자 입력").strip()
         if c.chunk_id and c.chunk_id != cid:
             src += f" (원본 id: {c.chunk_id})"
         lines += [f"## {cid} | {c.category.strip()}", "", c.text.strip(), "",
                   f"- strict: {'true' if c.strict else 'false'}",
                   f"- source: {src}", "", "---", ""]
+
+    for r in body.rewards:
+        for cat, text in _reward_to_chunks(r):
+            idx += 1
+            lines += [f"## kb_p_{idx:03d} | {cat}", "", text, "",
+                      "- strict: true",
+                      f"- source: 리워드 등록 정보{f' ({r.reward_display_code})' if r.reward_display_code else ''}",
+                      "", "---", ""]
     return "\n".join(lines)
 
 
@@ -267,6 +347,8 @@ def prepare(live_id: str, body: PrepareBody):
     MVP 한계: 활성 KB 는 프로세스 전역 1개 — 동시에 여러 live 를 서로 다른
     상품으로 돌리려면 프로세스 분리 또는 다음 페이즈의 per-live KB 필요.
     """
+    global service
+    from parts.o_part import part as o_part_mod
     from parts.p_part import rag_retriever
 
     RUNTIME_DIR.mkdir(parents=True, exist_ok=True)
@@ -274,13 +356,26 @@ def prepare(live_id: str, body: PrepareBody):
     md_path.write_text(_knowledge_to_md(body), encoding="utf-8")
     rag_retriever.set_product_md(md_path)
 
+    # 실제 리워드가 등록되면 상품별 수치가 박힌 O파트 FAQ(가격·한정수량)를 끄고
+    # P파트(등록된 리워드 KB)가 답하게 한다 — 상품 교체 시 오답 방지.
+    # 라우터가 manifest 를 시작 시 캐싱하므로 서비스를 재구성한다.
+    o_part_mod.set_reward_data_registered(bool(body.rewards))
+    service = CopilotService(parts=[OPart(), PPart()])
+    for lid, s in _lives.items():
+        if s.get("context"):
+            service.put_context(s["context"])
+
+    total = len(md_path.read_text(encoding="utf-8").split("## kb_p_")) - 1
     st = _live(live_id)
     st["product"] = {"product_name": body.product_name,
                      "product_category": body.product_category,
-                     "chunks": len(body.knowledge)}
+                     "project_display_code": body.project_display_code,
+                     "chunks": total}
     st["prepared"] = True
     return {"status": "ready", "live_id": live_id,
-            "product_name": body.product_name, "chunks": len(body.knowledge)}
+            "product_name": body.product_name,
+            "project_display_code": body.project_display_code,
+            "chunks": total, "reward_chunks": total - len(body.knowledge)}
 
 
 # =========================================================
@@ -296,7 +391,9 @@ class ContextBody(BaseModel):
 
 @app.put(BASE + "/lives/{live_id}/context", dependencies=[Depends(_auth)], tags=["A. 라이브 자동 답변"])
 def put_context(live_id: str, body: ContextBody):
-    service.put_context(LiveContext(live_id=live_id, **body.model_dump()))
+    ctx = LiveContext(live_id=live_id, **body.model_dump())
+    service.put_context(ctx)
+    _live(live_id)["context"] = ctx   # prepare 시 서비스 재구성 대비 보관
     return {"status": "ok", "live_id": live_id}
 
 
@@ -305,9 +402,17 @@ def put_context(live_id: str, body: ContextBody):
 # =========================================================
 
 class CommentIn(BaseModel):
+    """BE chat.chat_messages 1행에 대응.
+
+    - comment_id = chat_messages.id (BIGINT 문자열)
+    - sender_id  = chat_messages.sender_id (UUID) — 선택, 로그·중복판정 보조용
+    - at_ms      = sent_at - live_sessions.actual_start_at (방송 시작 기준 ms)
+      BE 가 절대시각만 가진 경우 broadcast_start_at 기준으로 환산해 전달
+    """
     comment_id: str
     text: str = Field(min_length=1, max_length=300)
     at_ms: int = 0
+    sender_id: str | None = None
 
 
 class CommentsBody(BaseModel):
@@ -353,9 +458,11 @@ def analyze_comments(live_id: str, body: CommentsBody):
     """
     st = _live(live_id)
     if not st["prepared"]:
+        # BE 표준 에러 형식: {code, message, detail}
         return JSONResponse(status_code=409, content={
-            "status": "error", "code": "NOT_PREPARED",
+            "code": "NOT_PREPARED",
             "message": "상품정보 색인 전입니다. POST /prepare 를 먼저 호출하세요.",
+            "detail": None,
         })
 
     questions, ignored, errors = [], [], []
@@ -503,7 +610,8 @@ def _find_by_qid(live_id: str, qid: str) -> dict:
     for e in _live(live_id)["faq"].values():
         if e["qid"] == qid:
             return e
-    raise HTTPException(status_code=404, detail={"code": "NOT_FOUND"})
+    raise HTTPException(status_code=404, detail={
+        "code": "NOT_FOUND", "message": "해당 질문을 찾을 수 없습니다.", "detail": None})
 
 
 @app.get(BASE + "/lives/{live_id}/unanswered", dependencies=[Depends(_auth)], tags=["B. 자주 나오는 질문 요약"])
@@ -615,11 +723,23 @@ def summary(live_id: str, top_n: int = 15):
         by_cat.setdefault(e["category"] or "기타", []).append(_faq_row(e))
     by_category = dict(sorted(by_cat.items(),
                               key=lambda kv: -sum(r["count"] for r in kv[1])))
+
+    # LIVE 검증탭 게시용 (streaming.live_verification_posts)
+    # 답변이 확정된 질문만 — question_summary + seller_answer 형태로 그대로 적재 가능
+    verification_posts = [
+        {"question_summary": e["representative_text"],
+         "seller_answer": e["seller_answer"] or e["ai_answer"],
+         "answered_by": _answered_by(e),
+         "related_question_count": e["count"]}
+        for e in entries if e["seller_answer"] or e["ai_answer"]
+    ][:top_n]
+
     return {"status": "ok", "live_id": live_id,
             "total_questions": sum(e["count"] for e in entries),
             "unique_questions": len(entries),
             "top_questions": top,
-            "by_category": by_category}
+            "by_category": by_category,
+            "verification_posts": verification_posts}
 
 
 # =========================================================

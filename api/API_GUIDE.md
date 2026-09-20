@@ -3,7 +3,7 @@
 백엔드 팀 전달용. 기능별 API 계약과 연동 순서를 정리한다.
 기계용 스펙: `docs/openapi.json` (Swagger UI: 서버 실행 후 `/docs`)
 
-- **Base Path**: `/api/v1/funding-ai`
+- **Base Path**: `/api/v1/ai`
 - **인증**: `Authorization: Bearer {token}` — 서버 env `API_TOKEN` 설정 시 필수 (미설정 = 개발 모드)
 - **실행**: `uvicorn api.main:app --port 8080` (env: `GEMINI_API_KEY` 필수)
 - **시간값**: `at_ms` = 방송 시작 기준 ms
@@ -24,21 +24,45 @@
 
 ### A-1. `POST /lives/{live_id}/prepare` — 상품정보 색인
 
+`live_id` = `streaming.live_sessions.public_id` (UUID)
+
 ```json
 {
+  "product_name": "에어쿡 프로 에어프라이어",
   "product_category": "가전",
+  "category_minor": "주방가전",
+  "project_display_code": "F0000042",
+  "project_public_id": "018f2c1a-3b4e-7a12-9c9d-0a1b2c3d4e5f",
   "knowledge": [
     { "chunk_id": "kb_009", "category": "호환성",
       "text": "iOS 16 이상, Android 12 이상 지원",
       "strict": true, "source": "상품상세 p.12" }
+  ],
+  "rewards": [
+    { "reward_display_code": "R0000001", "name": "얼리버드 패키지",
+      "description": "본체 + 전용 바스켓 2종", "price": 89000,
+      "is_limited": true, "quantity": 100, "is_early_bird": true,
+      "option_groups": [ { "name": "색상", "values": ["화이트", "블랙"] } ] }
   ]
 }
 ```
-- `strict: true` = 원문 그대로만 제공해야 하는 정보 (약관·정확 수치)
-- `product_name` (선택): 상품명 — 응답·로그 표기용
-- 응답: `{ "status": "ready", "product_name": "...", "chunks": n }`
-- ✅ **동적 KB**: 여기서 전달된 knowledge 가 **활성 상품 KB 로 즉시 교체**되어, 이후 상품 질문은 이 정보를 근거로 답변한다. 상품이 바뀌면 이 API 만 다시 호출 (재학습·재배포 불필요)
-- ⚠ MVP 한계: 활성 KB 는 프로세스 전역 1개 — 동시에 여러 live 를 서로 다른 상품으로 운영하려면 프로세스 분리 필요 (per-live KB 는 다음 페이즈)
+
+**필드 매핑 (project-service)**
+
+| AI 필드 | BE 출처 |
+|---|---|
+| `product_name` | `projects.title` |
+| `product_category` / `category_minor` | `projects.category_major` / `category_minor` |
+| `project_display_code` | `projects.project_display_code` (F0000001) |
+| `rewards[]` | `rewards` + `reward_option_groups` + `reward_option_values` |
+| `rewards[].option_groups[].values` | `reward_option_values.value` 목록 |
+
+- `rewards`를 전달하면 **리워드 가격·한정수량·구성·옵션이 자동으로 KB 청크로 변환**되어 리워드 문의에도 정확히 답변한다 (`GET /projects/{id}/rewards` 응답을 그대로 넘기면 됨)
+- ⚠️ `rewards` 미전달 시 리워드 관련 질문은 플랫폼 공통 FAQ로 답변되어 **프로젝트별 실제 가격·수량과 다를 수 있음** → 전달 권장
+- `strict: true` = 원문 그대로만 제공 (약관·정확 수치)
+- 응답: `{ "status": "ready", "product_name": "...", "project_display_code": "F0000042", "chunks": 5, "reward_chunks": 4 }`
+- ✅ **동적 KB**: 전달된 정보가 활성 상품 KB로 즉시 교체 — 상품이 바뀌면 이 API만 재호출 (재학습·재배포 불필요)
+- ⚠️ MVP 한계: 활성 KB는 프로세스 전역 1개 — 동시 멀티 라이브·멀티 상품은 프로세스 분리 필요
 
 ### A-2. `PUT /lives/{live_id}/context` — 실시간 값
 
@@ -55,8 +79,18 @@
 요청 (배치 최대 50건, 3초 단위 권장):
 ```json
 { "comments": [
-    { "comment_id": "c_1041", "text": "흡입력 얼마나 돼요?", "at_ms": 331200 } ] }
+    { "comment_id": "1041", "text": "흡입력 얼마나 돼요?", "at_ms": 331200,
+      "sender_id": "11111111-1111-7111-8111-111111111111" } ] }
 ```
+
+**필드 매핑 (chat.chat_messages)**
+
+| AI 필드 | BE 출처 |
+|---|---|
+| `comment_id` | `chat_messages.id` |
+| `text` | `chat_messages.content` |
+| `sender_id` | `chat_messages.sender_id` (선택) |
+| `at_ms` | `sent_at` − `live_sessions.actual_start_at` (방송 시작 기준 ms) |
 
 응답 (실측 예시):
 ```json
@@ -174,15 +208,43 @@ FE 반영 규칙:
 
 ---
 
+## BE 저장 매핑 (live-service)
+
+AI 응답을 BE 테이블에 그대로 적재할 수 있도록 대응 필드를 함께 제공한다.
+
+### `chat.live_question_summaries` ← `GET /faq`
+
+| 컬럼 | AI 응답 필드 |
+|---|---|
+| `session_id` | (BE 보유) live_id 로 조회 |
+| `summary_text` | `qna[].summary_text` |
+| `related_question_count` | `qna[].related_question_count` |
+| `is_pinned` | `qna[].is_pinned` (3분 윈도우 TOP3 승격분) |
+
+### `streaming.live_verification_posts` ← `GET /summary`
+
+| 컬럼 | AI 응답 필드 |
+|---|---|
+| `question_summary` | `verification_posts[].question_summary` |
+| `seller_answer` | `verification_posts[].seller_answer` |
+
+- `verification_posts` 는 **답변이 확정된 질문만** 포함 (`answered_by`: SELLER/AI)
+- project-service `POST /projects/{id}/live-verifications` 의 `questionSummaryId` 는 AI 의 `qid` 를 사용하면 추적이 이어진다
+
+---
+
 ## 공통
 
 ### 오류 계약
+
+전사 표준 형식 `{ "code": "...", "message": "...", "detail": null }` 를 따른다.
 
 | 상황 | HTTP | code | BE 처리 |
 |---|---|---|---|
 | 색인 전 comments 호출 | 409 | `NOT_PREPARED` | prepare 선행 후 재호출 |
 | 인증 실패 | 401 | `UNAUTHORIZED` | 토큰 확인 |
-| 요청 형식 오류 | 422 | (FastAPI validation) | 필수값·형식 점검 |
+| 대상 없음 (qid 등) | 404 | `NOT_FOUND` | ID 확인 |
+| 요청 형식 오류 | 422 | `VALIDATION_ERROR` | 필수값·형식 점검 |
 | 개별 댓글 LLM 실패 | 200 + `errors[]` | `EVIDENCE_UNAVAILABLE` | 해당 건 재시도 — **임의 답변 대체 금지** |
 
 ### 운영 주의
