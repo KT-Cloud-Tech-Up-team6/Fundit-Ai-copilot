@@ -1,0 +1,14 @@
+{
+  "funding": {
+    "deadline": "2026-09-15T23:59:59+09:00",
+    "achieved_rate": 142,
+    "target_amount": 30000000
+  },
+  "broadcast": {
+    "end_at": "2026-09-01T20:10:00+09:00",
+    "vod_enabled": true
+  },
+  "extra_slots": {
+    "early_bird_left": 6
+  }
+}

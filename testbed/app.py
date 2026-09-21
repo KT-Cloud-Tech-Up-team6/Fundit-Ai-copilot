@@ -39,8 +39,9 @@ LIVE_ID = "9401"
 app = FastAPI(title="LiveFunding Copilot — Live Test", version="0.1.0")
 
 service = CopilotService(parts=[OPart(), PPart()])
-# 평가와 동일한 목데이터 컨텍스트 (로보락 F25 ACE, 달성률 142%)
-service.put_context(LiveContext(
+
+# 기본 컨텍스트 (목데이터). scenario/product/context.json 이 오면 교체된다.
+_context = LiveContext(
     live_id=LIVE_ID,
     project_id="8812",
     broadcast={
@@ -54,7 +55,8 @@ service.put_context(LiveContext(
         "target_amount": 30_000_000,
     },
     extra_slots={"early_bird_left": 6},
-))
+)
+service.put_context(_context)
 
 
 def _password() -> str:
@@ -237,6 +239,57 @@ def reset(body: PwBody):
         _tracker().reset()  # 관심사 집계도 세션과 함께 초기화
     except Exception:
         pass
+    return {"ok": True}
+
+
+class PrepareBody(BaseModel):
+    """실증 시나리오 상품정보 주입 (run_scenario.py 가 호출)."""
+    password: str
+    product: dict
+
+
+@app.post("/api/prepare")
+def prepare_product(body: PrepareBody):
+    """scenario/product/product.json 을 활성 상품 KB 로 색인한다.
+
+    api/main.py 의 prepare 와 동일한 변환을 재사용해, 목데이터가 아니라
+    실제 상품정보 기준으로 답변하게 만든다.
+    """
+    _auth(body.password)
+    from api.main import PrepareBody as ApiPrepareBody, _knowledge_to_md
+    from parts.o_part import part as o_part_mod
+    from parts.p_part import rag_retriever
+
+    payload = ApiPrepareBody(**body.product)
+    md_dir = Path(__file__).parent / "uploads"
+    md_dir.mkdir(parents=True, exist_ok=True)
+    md_path = md_dir / "scenario_product.md"
+    md_path.write_text(_knowledge_to_md(payload), encoding="utf-8")
+    rag_retriever.set_product_md(md_path)
+
+    # 실제 리워드가 오면 상품별 수치가 박힌 공통 FAQ 를 끈다 (오답 방지)
+    o_part_mod.set_reward_data_registered(bool(payload.rewards))
+    global service
+    service = CopilotService(parts=[OPart(), PPart()])
+    service.put_context(_context)
+
+    chunks = md_path.read_text(encoding="utf-8").count("## kb_p_")
+    return {"ok": True, "product_name": payload.product_name,
+            "chunks": chunks, "rewards": len(payload.rewards)}
+
+
+class ContextBody(BaseModel):
+    password: str
+    context: dict
+
+
+@app.post("/api/context")
+def put_scenario_context(body: ContextBody):
+    """scenario/product/context.json — 마감일·달성률 등 실시간 값 주입."""
+    _auth(body.password)
+    global _context
+    _context = LiveContext(live_id=LIVE_ID, **body.context)
+    service.put_context(_context)
     return {"ok": True}
 
 

@@ -1,0 +1,83 @@
+{
+  "product_name": "로보락 F25",
+  "product_category": "가전",
+  "project_display_code": "F0000042",
+  "knowledge": [
+    {
+      "chunk_id": "kb_p_001",
+      "category": "제품 기본 정보",
+      "text": "제품 모델은 F25이며, 본체 모델은 WD5M1A, 도크 모델은 MDS15HRR이고 파생모델로 MDS17HRR이 표기되어 있습니다.",
+      "strict": true,
+      "source": "KT알파 쇼핑 상품상세 p.21-22"
+    },
+    {
+      "chunk_id": "kb_p_002",
+      "category": "제품 크기 및 무게",
+      "text": "본체 크기는 262×221×1100mm이며, 도크 포함 크기는 330×316×1157mm입니다.",
+      "strict": true,
+      "source": "KT알파 쇼핑 상품상세 p.21"
+    },
+    {
+      "chunk_id": "kb_p_003",
+      "category": "제품 크기 및 무게",
+      "text": "본체 무게는 4.2kg이며, 본체와 도크를 포함한 무게는 5.7kg입니다.",
+      "strict": true,
+      "source": "KT알파 쇼핑 상품상세 p.21"
+    },
+    {
+      "chunk_id": "kb_p_004",
+      "category": "제품 기본 정보",
+      "text": "제품 색상은 블랙입니다.",
+      "strict": true,
+      "source": "KT알파 쇼핑 상품상세 p.21"
+    },
+    {
+      "chunk_id": "kb_p_005",
+      "category": "제품 성능 및 사양",
+      "text": "최대 흡입력은 20,000Pa입니다.",
+      "strict": true,
+      "source": "KT알파 쇼핑 상품상세 p.14, p.21"
+    },
+    {
+      "chunk_id": "kb_p_006",
+      "category": "배터리 및 전원",
+      "text": "배터리는 TYP 4,000mAh이며 정격 용량은 3,700mAh입니다.",
+      "strict": true,
+      "source": "KT알파 쇼핑 상품상세 p.21"
+    },
+    {
+      "chunk_id": "kb_p_007",
+      "category": "배터리 및 전원",
+      "text": "정격 입력은 220-240V~, 50-60Hz이며 충전 시 0.35A, 건조 시 3A입니다.",
+      "strict": true,
+      "source": "KT알파 쇼핑 상품상세 p.21"
+    },
+    {
+      "chunk_id": "kb_p_008",
+      "category": "배터리 및 전원",
+      "text": "정격 출력은 30VDC 1A입니다.",
+      "strict": true,
+      "source": "KT알파 쇼핑 상품상세 p.21"
+    }
+  ],
+  "rewards": [
+    {
+      "reward_display_code": "R0000001",
+      "name": "얼리버드 패키지",
+      "description": "본체 + 전용 바스켓 2종",
+      "price": 389000,
+      "is_limited": true,
+      "quantity": 50,
+      "is_early_bird": true,
+      "option_groups": [
+        {
+          "name": "색상",
+          "values": [
+            "화이트",
+            "블랙"
+          ]
+        }
+      ]
+    }
+  ]
+}

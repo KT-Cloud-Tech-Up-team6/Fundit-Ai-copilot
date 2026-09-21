@@ -14,3 +14,5 @@ api/runtime/
 test_post_live_interest.json
 parts/p_part/data/live_knowledge.json
 parts/p_part/data/kshopping_style/raw/
+testbed/scenario/video/
+testbed/scenario/exports/
