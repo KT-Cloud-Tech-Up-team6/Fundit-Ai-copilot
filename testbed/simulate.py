@@ -5,8 +5,8 @@
 호출 속도는 평균 10건/분으로 무료 등급 한도(15회/분) 안에서 돈다.
 
 사용법:
-  python -m webtest.simulate                      # localhost:8000, team-only
-  python -m webtest.simulate <url> <password>
+  python -m testbed.simulate                      # localhost:8000, team-only
+  python -m testbed.simulate <url> <password>
 미리 켜두면 [방송 시작]을 누르는 순간부터 채팅이 흐르기 시작한다. Ctrl+C 로 중단.
 """
 from __future__ import annotations

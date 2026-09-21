@@ -1,4 +1,4 @@
-# 라이브 목방송 테스트 환경 (webtest)
+# 라이브 목방송 테스트 환경 (testbed)
 
 목영상 + 실시간 채팅으로 코파일럿의 라이브 동작을 팀이 직접 검증하는 웹앱.
 왼쪽 채팅창에 팀원들이 자유롭게 채팅을 치면, 코파일럿이 실시간으로
@@ -9,12 +9,12 @@
 ```bash
 pip install -r requirements.txt
 # .env 에 GEMINI_API_KEY, SITE_PASSWORD 설정
-uvicorn webtest.app:app --reload
+uvicorn testbed.app:app --reload
 # http://localhost:8000 접속 → 비밀번호 입장 → [영상 업로드] → [방송 시작]
 ```
 
 로컬은 저장소가 프로세스 메모리라 서버 재시작 시 로그가 사라진다.
-영상 업로드는 서버 디스크(`webtest/uploads/`)에 저장된다.
+영상 업로드는 서버 디스크(`testbed/uploads/`)에 저장된다.
 
 ## Vercel 배포
 
@@ -35,7 +35,7 @@ uvicorn webtest.app:app --reload
 2. 진행자: [영상 업로드] 또는 [영상 URL] 로 목영상 설정
 3. 진행자: [방송 시작] → 전원 영상이 같은 시점으로 재생 (라이브 시뮬레이션)
 4. 방송 동안 자유롭게 채팅 (질문·잡담·개인문의 섞어서)
-5. 종료 후: `python -m webtest.report https://<배포주소> <비밀번호>`
+5. 종료 후: `python -m testbed.report https://<배포주소> <비밀번호>`
    → `docs/LIVE_TEST_REPORT.md` 생성 (판정 분포·지연·전체 내역 + 수기 검증 칸)
 
 ## 예정 (통합 후)

@@ -1,8 +1,8 @@
 """라이브 테스트 세션 로그 → 검증 리포트 생성.
 
 사용법:
-  python -m webtest.report https://<배포주소> <비밀번호>     # 서버에서 로그 받아서 생성
-  python -m webtest.report <export.json 파일경로>            # 내려받은 JSON으로 생성
+  python -m testbed.report https://<배포주소> <비밀번호>     # 서버에서 로그 받아서 생성
+  python -m testbed.report <export.json 파일경로>            # 내려받은 JSON으로 생성
 
 산출물:
   eval/results/live_session_<ts>.json  (원본 로그 백업)

@@ -8,9 +8,9 @@
 - 채팅: 댓글 1건 = 분류 1회. ANSWER/UNANSWERABLE 만 봇이 채팅으로 답하고
   IGNORE 는 조용히 로그만 남긴다 (실서비스 동작과 동일)
 - 로그: 전 댓글의 판정·라벨·faq_id·지연이 기록됨 → GET /api/export
-  → `python -m webtest.report <url> <password>` 로 리포트 생성
+  → `python -m testbed.report <url> <password>` 로 리포트 생성
 
-로컬 실행: uvicorn webtest.app:app --reload
+로컬 실행: uvicorn testbed.app:app --reload
 Vercel 배포: vercel.json 참고 (환경변수 GEMINI_API_KEY, SITE_PASSWORD, VIDEO_URL,
 Upstash KV 연동 필요)
 """
@@ -32,7 +32,7 @@ from orchestrator.service import CopilotService
 from parts.o_part.part import OPart
 from parts.p_part.part import PPart
 from shared.schemas import Comment, Decision, LiveContext
-from webtest import store
+from testbed import store
 
 LIVE_ID = "9401"
 
