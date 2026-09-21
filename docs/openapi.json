@@ -682,6 +682,197 @@
         }
       }
     },
+    "/api/v1/ai/lives/{live_id}/ready": {
+      "get": {
+        "tags": [
+          "C. BE 연동"
+        ],
+        "summary": "Ready",
+        "description": "AiClient.isReady() 대응 — 상품정보 색인 완료 여부.\n\nBE 는 이 값으로 판매자 화면의 aiStatus(READY/PREPARING)를 내린다.",
+        "operationId": "ready_api_v1_ai_lives__live_id__ready_get",
+        "parameters": [
+          {
+            "name": "live_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Live Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ai/lives/{live_id}/answer-draft": {
+      "post": {
+        "tags": [
+          "C. BE 연동"
+        ],
+        "summary": "Answer Draft",
+        "description": "AiClient.generateAnswer() 대응 — 대표질문 추천답변 초안 (동기).\n\n반환은 BE AnswerDraft(draftAnswer, grounded) 형태.\ngrounded=false 는 에러가 아니라 '상품정보에서 근거를 못 찾음' 상태다\n(BE 주석·요구사항정의서 6.4.4.5 의 Empty State 요구와 동일).\n\nBE 가 productContext 를 함께 보내면 그 텍스트도 참고 근거로 사용한다.",
+        "operationId": "answer_draft_api_v1_ai_lives__live_id__answer_draft_post",
+        "parameters": [
+          {
+            "name": "live_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Live Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnswerDraftBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ai/lives/{live_id}/question-summaries": {
+      "get": {
+        "tags": [
+          "C. BE 연동"
+        ],
+        "summary": "Question Summaries",
+        "description": "BE chat.live_question_summaries 적재용 — 컬럼명 그대로 내려준다.\n\nBE 에 수신 엔드포인트(POST /internal/v1/lives/{id}/question-summaries)가 생기면\nAI 가 3분 주기로 push 하고, 그 전까지는 BE 가 이 API 를 폴링해 적재하면 된다.\n둘 중 어느 방식이든 payload 는 동일하다.\n\n- public_id: AI 가 부여하는 질문 그룹 식별자 (BE questionId 로 사용 가능)\n- topic: 관심사 집계 키 (BE insights 의 topics 맵이 이 값을 접어서 만든다)",
+        "operationId": "question_summaries_api_v1_ai_lives__live_id__question_summaries_get",
+        "parameters": [
+          {
+            "name": "live_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Live Id"
+            }
+          },
+          {
+            "name": "top_n",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 20,
+              "title": "Top N"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/ai/health": {
       "get": {
         "tags": [
@@ -761,6 +952,29 @@
   },
   "components": {
     "schemas": {
+      "AnswerDraftBody": {
+        "properties": {
+          "question_text": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Question Text"
+          },
+          "product_context": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Product Context",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "question_text"
+        ],
+        "title": "AnswerDraftBody",
+        "description": "AiClient.generateAnswer() 요청 — BE AiAnswerRequest 와 동일 형태."
+      },
       "CommentIn": {
         "properties": {
           "comment_id": {

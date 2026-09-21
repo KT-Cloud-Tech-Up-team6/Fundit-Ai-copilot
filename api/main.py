@@ -82,9 +82,39 @@ def _qkey(text: str) -> str:
     return "".join(ch for ch in text if ch.isalnum())
 
 
+# 질문 의미에 기여하지 않는 조사·의문어미·부사 (병합 판정에서 제외)
+_STOP_FRAGMENTS = (
+    "인가요", "예요", "에요", "이에요", "인가", "나요", "가요", "까요", "어요", "아요",
+    "하나요", "되나요", "돼요", "습니까", "습니다", "있나요", "있어요", "해요", "한가요",
+    "은", "는", "이", "가", "을", "를", "의", "도", "만", "에", "로", "으로", "부터", "까지",
+)
+_STOP_WORDS = {"뭐", "뭐뭐", "몇", "얼마", "어떻게", "언제", "어디", "무슨", "그냥", "혹시",
+               "지금", "이거", "저거", "좀", "제가", "저는"}
+
+
 def _qwords(text: str):
+    """병합 비교용 핵심어 집합.
+
+    한국어 조사·의문어미가 붙어 같은 말이 다른 단어로 갈리는 것을 막는다.
+    예: '용량'/'용량이' → 둘 다 '용량', '리터예요'/'몇리터인가요' → 둘 다 '리터'
+    의문사(몇·얼마·어떻게)는 어느 질문에나 붙으므로 제외해 오병합을 막는다.
+    """
     import re
-    return set(re.findall(r"[가-힣a-zA-Z0-9]{2,}", text.lower()))
+    out = set()
+    for w in re.findall(r"[가-힣a-zA-Z0-9]+", text.lower()):
+        # 어미·조사 제거 (긴 것부터)
+        for frag in sorted(_STOP_FRAGMENTS, key=len, reverse=True):
+            if len(w) > len(frag) and w.endswith(frag):
+                w = w[: -len(frag)]
+                break
+        # 붙어 쓴 의문사 분리: '몇리터' → '리터'
+        for q in ("몇", "무슨", "어떤"):
+            if len(w) > len(q) and w.startswith(q):
+                w = w[len(q):]
+                break
+        if len(w) >= 2 and w not in _STOP_WORDS:
+            out.add(w)
+    return out
 
 
 def _faq_lookup(st: dict, text: str, topics: list | None = None,
@@ -125,7 +155,10 @@ def _faq_lookup(st: dict, text: str, topics: list | None = None,
                 text.lower(),
                 e["representative_text"].lower(),
             ).ratio()
-            score = max(jaccard, ratio)
+            # 문자 유사도만으로는 "펀딩 언제 끝나요?" / "배송 언제 와요?" 처럼
+            # 어미만 닮은 다른 질문이 합쳐진다(0.63). 핵심어가 하나도 겹치지 않으면
+            # 문자 유사도는 신뢰하지 않는다.
+            score = max(jaccard, ratio) if (tw & ew) else jaccard
 
             if score > best_score:
                 best_key, best_score = k, score
@@ -847,6 +880,116 @@ def summary(live_id: str, top_n: int = 15):
             "top2_qa": top2_qa,
             "by_category": by_category,
             "verification_posts": verification_posts}
+
+
+# =========================================================
+# 기능 C. BE(live-service) 연동 전용 — AiClient 인터페이스 1:1 대응
+#
+# BE 는 FE → BE → AI → BE → FE 흐름으로 통일했고 FE 는 AI 를 직접 호출하지 않는다.
+# BE application/ai/AiClient.java 의 메서드와 이 섹션이 1:1 로 대응한다.
+# =========================================================
+
+@app.get(BASE + "/lives/{live_id}/ready", dependencies=[Depends(_auth)], tags=["C. BE 연동"])
+def ready(live_id: str):
+    """AiClient.isReady() 대응 — 상품정보 색인 완료 여부.
+
+    BE 는 이 값으로 판매자 화면의 aiStatus(READY/PREPARING)를 내린다.
+    """
+    st = _live(live_id)
+    return {"ready": bool(st["prepared"]),
+            "status": "READY" if st["prepared"] else "PREPARING",
+            "product_name": (st["product"] or {}).get("product_name"),
+            "chunks": (st["product"] or {}).get("chunks", 0)}
+
+
+class AnswerDraftBody(BaseModel):
+    """AiClient.generateAnswer() 요청 — BE AiAnswerRequest 와 동일 형태."""
+    question_text: str = Field(min_length=1)
+    product_context: list[str] = []
+
+
+@app.post(BASE + "/lives/{live_id}/answer-draft", dependencies=[Depends(_auth)], tags=["C. BE 연동"])
+def answer_draft(live_id: str, body: AnswerDraftBody):
+    """AiClient.generateAnswer() 대응 — 대표질문 추천답변 초안 (동기).
+
+    반환은 BE AnswerDraft(draftAnswer, grounded) 형태.
+    grounded=false 는 에러가 아니라 '상품정보에서 근거를 못 찾음' 상태다
+    (BE 주석·요구사항정의서 6.4.4.5 의 Empty State 요구와 동일).
+
+    BE 가 productContext 를 함께 보내면 그 텍스트도 참고 근거로 사용한다.
+    """
+    from parts.p_part.rag_answer import build_style_text, retrieve_style_frames
+    from parts.p_part.rag_retriever import retrieve
+
+    question = body.question_text.strip()
+    try:
+        chunks = retrieve(question, top_k=3)
+    except Exception:
+        chunks = []
+
+    refs = [c["text"] for c in chunks] + [c for c in body.product_context if c and c.strip()]
+    if not refs:
+        # 근거 없음 — 초안을 지어내지 않는다 (환각 차단 원칙)
+        return {"draftAnswer": None, "grounded": False,
+                "source_chunk_ids": [], "question_text": question}
+
+    style = build_style_text(retrieve_style_frames(question))
+    prompt = (
+        "라이브커머스 판매자가 방송에서 그대로 읽을 답변 초안을 1~2문장으로 작성하세요.\n"
+        "규칙: 아래 참고 정보에 있는 사실만 사용하고, 확인되지 않는 내용은 문장에 넣지 말고 "
+        "'[판매자 확인 필요: ...]' 로 비워 두세요. 새로운 수치·조건을 만들지 마세요.\n"
+        f"상담사 말투 참고:\n{style}\n\n"
+        f"고객 질문: {question}\n"
+        f"참고 상품정보:\n" + "\n".join(f"- {r}" for r in refs) + "\n"
+    )
+    import re as _re
+    draft = None
+    for attempt in range(3):
+        try:
+            raw = llm.generate_text(prompt)
+            draft = _re.sub(r"^\s*\[[A-Z_]+\]\s*", "", raw).strip()
+            break
+        except Exception as err:
+            if attempt < 2 and ("429" in str(err) or "RESOURCE_EXHAUSTED" in str(err)):
+                time.sleep(15)
+                continue
+            break
+    if not draft:
+        return {"draftAnswer": None, "grounded": False,
+                "source_chunk_ids": [], "question_text": question}
+    return {"draftAnswer": draft, "grounded": True,
+            "source_chunk_ids": [c["chunk_id"] for c in chunks],
+            "question_text": question}
+
+
+@app.get(BASE + "/lives/{live_id}/question-summaries", dependencies=[Depends(_auth)], tags=["C. BE 연동"])
+def question_summaries(live_id: str, top_n: int = 20):
+    """BE chat.live_question_summaries 적재용 — 컬럼명 그대로 내려준다.
+
+    BE 에 수신 엔드포인트(POST /internal/v1/lives/{id}/question-summaries)가 생기면
+    AI 가 3분 주기로 push 하고, 그 전까지는 BE 가 이 API 를 폴링해 적재하면 된다.
+    둘 중 어느 방식이든 payload 는 동일하다.
+
+    - public_id: AI 가 부여하는 질문 그룹 식별자 (BE questionId 로 사용 가능)
+    - topic: 관심사 집계 키 (BE insights 의 topics 맵이 이 값을 접어서 만든다)
+    """
+    st = _live(live_id)
+    _promote_windows(st)
+    rows = sorted(st["faq"].values(), key=lambda e: -e["count"])[:top_n]
+    return {"live_id": live_id, "generated_at": time.time(),
+            "summaries": [
+                {"public_id": e["qid"],
+                 "summary_text": e["representative_text"],
+                 "related_question_count": e["count"],
+                 "topic": e["category"] or "기타",
+                 "is_answered": bool(e["seller_answer"] or e["ai_answer"]),
+                 "answer_text": e["seller_answer"] or e["ai_answer"],
+                 "answered_by": _answered_by(e),
+                 "answered_at": e["seller_answer_at"] or e["ai_answer_at"],
+                 "is_pinned": e.get("promoted", False),
+                 "comment_ids": [o["comment_id"] for o in e["originals"] if o.get("comment_id")]}
+                for e in rows
+            ]}
 
 
 # =========================================================
