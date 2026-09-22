@@ -873,12 +873,20 @@ def summary(live_id: str, top_n: int = 15):
         for e in entries if e["seller_answer"] or e["ai_answer"]
     ][:top_n]
 
+    # BE(live-service) 파싱 호환 필드.
+    # BE AiClient.SummaryResult 는 top_questions: List<String>,
+    # by_category: Map<String, List<String>> 로 받는다. 위 객체 배열을 그대로 주면
+    # Jackson 이 String 으로 못 바꿔 /summary 호출 전체가 실패한다.
+    # 기존 객체 필드는 화면·리포트가 쓰므로 유지하고, 문자열 버전을 따로 싣는다.
     return {"status": "ok", "live_id": live_id,
             "total_questions": sum(e["count"] for e in entries),
             "unique_questions": len(entries),
-            "top_questions": top,
+            "top_questions": [r["representative_text"] for r in top],
+            "by_category": {k: [r["representative_text"] for r in v]
+                            for k, v in by_category.items()},
+            "top_questions_detail": top,
+            "by_category_detail": by_category,
             "top2_qa": top2_qa,
-            "by_category": by_category,
             "verification_posts": verification_posts}
 
 
