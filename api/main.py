@@ -341,8 +341,8 @@ class PrepareBody(BaseModel):
     category_minor: str | None = None
     project_display_code: str | None = None       # F0000001 — 추적용
     project_public_id: str | None = None          # projects.public_id (UUID)
-    knowledge: list[KnowledgeChunk] = Field(min_length=1)
-    rewards: list[RewardIn] = []
+    knowledge: list[KnowledgeChunk] = Field(default_factory=list)
+    rewards: list[RewardIn] = Field(default_factory=list)
 
 
 def _reward_to_chunks(r: RewardIn) -> list[tuple[str, str]]:
@@ -419,6 +419,13 @@ def prepare(live_id: str, body: PrepareBody):
     global service
     from parts.o_part import part as o_part_mod
     from parts.p_part import rag_retriever
+
+    if not body.knowledge and not body.rewards:
+        return JSONResponse(status_code=422, content={
+            "code": "EMPTY_PRODUCT_KNOWLEDGE",
+            "message": "knowledge 또는 rewards 중 하나 이상이 필요합니다.",
+            "detail": None,
+        })
 
     RUNTIME_DIR.mkdir(parents=True, exist_ok=True)
     md_path = RUNTIME_DIR / f"product_{live_id}.md"
