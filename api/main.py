@@ -341,8 +341,8 @@ class PrepareBody(BaseModel):
     category_minor: str | None = None
     project_display_code: str | None = None       # F0000001 — 추적용
     project_public_id: str | None = None          # projects.public_id (UUID)
-    knowledge: list[KnowledgeChunk] = Field(min_length=1)
-    rewards: list[RewardIn] = []
+    knowledge: list[KnowledgeChunk] = Field(default_factory=list)
+    rewards: list[RewardIn] = Field(default_factory=list)
 
 
 def _reward_to_chunks(r: RewardIn) -> list[tuple[str, str]]:
@@ -419,6 +419,13 @@ def prepare(live_id: str, body: PrepareBody):
     global service
     from parts.o_part import part as o_part_mod
     from parts.p_part import rag_retriever
+
+    if not body.knowledge and not body.rewards:
+        return JSONResponse(status_code=422, content={
+            "code": "EMPTY_PRODUCT_KNOWLEDGE",
+            "message": "knowledge 또는 rewards 중 하나 이상이 필요합니다.",
+            "detail": None,
+        })
 
     RUNTIME_DIR.mkdir(parents=True, exist_ok=True)
     md_path = RUNTIME_DIR / f"product_{live_id}.md"
@@ -526,6 +533,7 @@ def analyze_comments(live_id: str, body: CommentsBody):
     - ignored 는 잡담·개인문의 (판매자 화면·집계 제외)
     """
     st = _live(live_id)
+
     if not st["prepared"]:
         # BE 표준 에러 형식: {code, message, detail}
         return JSONResponse(status_code=409, content={
@@ -535,41 +543,142 @@ def analyze_comments(live_id: str, body: CommentsBody):
         })
 
     questions, ignored, errors = [], [], []
+
     for c in body.comments:
-        # ── 판매자 확정 답변 우선 ──
+
+        # ── 1. 현재 메모리에 저장된 판매자 확정 답변 우선 ──
         # 같은 질문(정규화 병합)에 판매자가 이미 [답변하기]로 대표 답변을 달았으면
-        # LLM 을 거치지 않고 즉시 그 답변으로 응답한다 (방송 중 실시간 학습 효과)
+        # LLM 을 거치지 않고 즉시 그 답변으로 응답한다.
         _, cached = _faq_lookup(st, c.text)
+
         if cached is not None and cached["seller_answer"]:
-            _record_question(st, c.text, c.at_ms, handled_by=cached["handled_by"],
-                             category=cached["category"], comment_id=c.comment_id)
+            _record_question(
+                st,
+                c.text,
+                c.at_ms,
+                handled_by=cached["handled_by"],
+                category=cached["category"],
+                comment_id=c.comment_id,
+            )
+
             st["qseq"] += 1
+
             questions.append({
-                "question_id": f"q_{st['qseq']:04d}", "comment_id": c.comment_id,
-                "text": c.text, "handled_by": cached["handled_by"],
-                "category": cached["category"], "at_ms": c.at_ms,
+                "question_id": f"q_{st['qseq']:04d}",
+                "comment_id": c.comment_id,
+                "text": c.text,
+                "handled_by": cached["handled_by"],
+                "category": cached["category"],
+                "at_ms": c.at_ms,
                 "qid": cached["qid"],
-                "answer": {"text": cached["seller_answer"],
-                           "grounding": "SELLER_CONFIRMED", "strict": False,
-                           "source": "판매자 확인 답변"},
+                "answer": {
+                    "text": cached["seller_answer"],
+                    "grounding": "SELLER_CONFIRMED",
+                    "strict": False,
+                    "source": "판매자 확인 답변",
+                },
             })
+
             continue
 
+        # ── 2. AI 재시작 후 파일에 저장된 판매자 답변 조회 ──
+        # 메모리 FAQ가 초기화됐더라도 Live Knowledge 파일에 저장된
+        # 판매자 확정 답변이 있으면 다시 불러와 즉시 사용한다.
+        persisted = None
+
         try:
-            ans = service.process(live_id, Comment(comment_id=c.comment_id, text=c.text))
+            from parts.p_part.mcp_servers.product_knowledge_server import (
+                find_live_product_fact,
+            )
+
+            persisted = find_live_product_fact(
+                live_id=live_id,
+                question=c.text,
+            )
+
+        except Exception:
+            persisted = None
+
+        if persisted is not None:
+            fact = persisted.fact
+
+            handled_by = (
+                fact.handled_by
+                or "UNANSWERABLE"
+            )
+
+            category = (
+                fact.category
+                or "기타"
+            )
+
+            rec = _record_question(
+                st,
+                c.text,
+                c.at_ms,
+                handled_by=handled_by,
+                category=category,
+                comment_id=c.comment_id,
+            )
+
+            # 파일에서 다시 불러온 판매자 답변을
+            # 현재 메모리 FAQ에도 복구한다.
+            rec["seller_answer"] = fact.answer
+            rec["seller_answer_at"] = time.time()
+
+            st["qseq"] += 1
+
+            questions.append({
+                "question_id": f"q_{st['qseq']:04d}",
+                "comment_id": c.comment_id,
+                "text": c.text,
+                "handled_by": handled_by,
+                "category": category,
+                "at_ms": c.at_ms,
+                "qid": rec["qid"],
+                "answer": {
+                    "text": fact.answer,
+                    "grounding": "SELLER_CONFIRMED",
+                    "strict": False,
+                    "source": "판매자 확인 답변",
+                },
+            })
+
+            continue
+
+        # ── 3. 판매자 답변이 없을 때 기존 AI 처리 ──
+        try:
+            ans = service.process(
+                live_id,
+                Comment(
+                    comment_id=c.comment_id,
+                    text=c.text,
+                ),
+            )
+
         except Exception as e:
-            errors.append({"comment_id": c.comment_id, "code": "EVIDENCE_UNAVAILABLE",
-                           "message": str(e)[:200]})
+            errors.append({
+                "comment_id": c.comment_id,
+                "code": "EVIDENCE_UNAVAILABLE",
+                "message": str(e)[:200],
+            })
+
             continue
 
         if ans.decision == Decision.IGNORE:
             ignored.append({
                 "comment_id": c.comment_id,
-                "reason": ans.ignored_reason.value if ans.ignored_reason else "NOT_QUESTION",
+                "reason": (
+                    ans.ignored_reason.value
+                    if ans.ignored_reason
+                    else "NOT_QUESTION"
+                ),
             })
+
             continue
 
         st["qseq"] += 1
+
         q: dict = {
             "question_id": f"q_{st['qseq']:04d}",
             "comment_id": c.comment_id,
@@ -579,6 +688,7 @@ def analyze_comments(live_id: str, body: CommentsBody):
             "at_ms": c.at_ms,
             "answer": None,
         }
+
         if ans.decision == Decision.ANSWER and ans.answer_text:
             q["answer"] = {
                 "text": ans.answer_text,
@@ -586,15 +696,27 @@ def analyze_comments(live_id: str, body: CommentsBody):
                 "strict": ans.strict,
                 "source": ans.source,
             }
+
             unresolved: list = []
+
             if ans.meta.get("grounding") == "PARTIAL_GROUNDED":
-                unresolved = _track_unanswered(live_id, c.text, ans)
+                unresolved = _track_unanswered(
+                    live_id,
+                    c.text,
+                    ans,
+                )
+
                 q["unresolved_topics"] = unresolved
+
             if q["handled_by"] == "PRODUCT":
                 # 라우터 label보다 실제 답변 근거로 사용된 KB chunk의
                 # category를 우선 사용한다.
                 category = q["category"]
-                source_ids = ans.meta.get("source_chunk_ids") or []
+
+                source_ids = (
+                    ans.meta.get("source_chunk_ids")
+                    or []
+                )
 
                 if source_ids:
                     try:
@@ -609,8 +731,10 @@ def analyze_comments(live_id: str, body: CommentsBody):
                             if source_id in chunk_categories:
                                 category = chunk_categories[source_id]
                                 break
+
                     except Exception:
                         pass
+
             else:
                 category = O_LABEL_NAMES.get(
                     q["category"],
@@ -629,9 +753,17 @@ def analyze_comments(live_id: str, body: CommentsBody):
                 topics=unresolved,
                 comment_id=c.comment_id,
             )
-        else:  # UNANSWERABLE — 시청자 무노출, 미답변 창·집계로
-            topics = _track_unanswered(live_id, c.text, ans)
+
+        else:
+            # UNANSWERABLE — 시청자 무노출, 미답변 창·집계로
+            topics = _track_unanswered(
+                live_id,
+                c.text,
+                ans,
+            )
+
             q["topics"] = topics
+
             category = (
                 topics[0]["category"]
                 if topics
@@ -640,6 +772,7 @@ def analyze_comments(live_id: str, body: CommentsBody):
                     q["category"],
                 ) or "기타"
             )
+
             q["category"] = category
 
             rec = _record_question(
@@ -651,12 +784,19 @@ def analyze_comments(live_id: str, body: CommentsBody):
                 topics=topics,
                 comment_id=c.comment_id,
             )
+
         q["qid"] = rec["qid"]
         questions.append(q)
 
-    out = {"status": "ok", "questions": questions, "ignored": ignored}
+    out = {
+        "status": "ok",
+        "questions": questions,
+        "ignored": ignored,
+    }
+
     if errors:
         out["errors"] = errors
+
     return out
 
 
@@ -820,18 +960,41 @@ def seller_answer(live_id: str, qid: str, body: SellerAnswerBody):
     ③ Live Knowledge(MCP) 에도 등록되어 상품 지식으로 축적된다
     """
     e = _find_by_qid(live_id, qid)
+
     e["seller_answer"] = body.answer_text.strip()
     e["seller_answer_at"] = time.time()
 
     lk = False
+
     try:
-        from parts.p_part.mcp_servers.product_knowledge_server import add_live_product_fact
-        fn = getattr(add_live_product_fact, "fn", add_live_product_fact)
-        fn(live_id=live_id, question=e["representative_text"], answer=e["seller_answer"])
+        from parts.p_part.mcp_servers.product_knowledge_server import (
+            add_live_product_fact,
+        )
+
+        fn = getattr(
+            add_live_product_fact,
+            "fn",
+            add_live_product_fact,
+        )
+
+        fn(
+            live_id=live_id,
+            question=e["representative_text"],
+            answer=e["seller_answer"],
+            handled_by=e["handled_by"],
+            category=e["category"],
+        )
+
         lk = True
+
     except Exception:
         pass  # Live Knowledge 등록 실패해도 대표 답변 자체는 유효
-    return {"status": "ok", "qid": qid, "live_knowledge_registered": lk}
+
+    return {
+        "status": "ok",
+        "qid": qid,
+        "live_knowledge_registered": lk,
+    }
 
 
 # =========================================================

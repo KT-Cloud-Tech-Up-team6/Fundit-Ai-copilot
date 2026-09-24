@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from typing import Annotated, Literal
 from datetime import datetime, timezone
@@ -36,11 +37,20 @@ from parts.p_part import rag_retriever
 # 2. Live Knowledge 저장 위치
 # =========================================================
 
-LIVE_KNOWLEDGE_FILE = (
+DEFAULT_LIVE_KNOWLEDGE_FILE = (
     PROJECT_ROOT
     / "data"
     / "live_knowledge.json"
 )
+
+# 운영 환경에서는 Persistent Volume 경로를 환경변수로 지정할 수 있다.
+# 미설정 시 기존 로컬 경로를 그대로 사용한다.
+LIVE_KNOWLEDGE_FILE = Path(
+    os.getenv(
+        "LIVE_KNOWLEDGE_PATH",
+        str(DEFAULT_LIVE_KNOWLEDGE_FILE),
+    )
+).expanduser()
 
 LIVE_KNOWLEDGE_FILE.parent.mkdir(
     parents=True,
@@ -81,6 +91,8 @@ class LiveKnowledgeFact(BaseModel):
     source: str
     created_at: str
     updated_at: str
+    handled_by: str | None = None
+    category: str | None = None
 
 
 class AddLiveKnowledgeResult(BaseModel):
@@ -216,7 +228,9 @@ def _upsert_live_fact(
     live_id: str,
     question: str,
     answer: str,
-    source: str
+    source: str,
+    handled_by: str | None = None,
+    category: str | None = None,
 ) -> AddLiveKnowledgeResult:
 
     normalized_question = (
@@ -263,6 +277,12 @@ def _upsert_live_fact(
                 item["source"] = source
                 item["updated_at"] = now
 
+                if handled_by is not None:
+                    item["handled_by"] = handled_by
+
+                if category is not None:
+                    item["category"] = category
+
                 _save_live_facts(
                     facts
                 )
@@ -300,6 +320,12 @@ def _upsert_live_fact(
 
             "updated_at":
                 now,
+
+            "handled_by":
+                handled_by,
+
+            "category":
+                category,
         }
 
         facts.append(
@@ -316,7 +342,6 @@ def _upsert_live_fact(
             **new_fact
         )
     )
-
 
 # =========================================================
 # 7. Live Knowledge 검색
@@ -479,6 +504,32 @@ def _search_live_knowledge(
 
     return results
 
+def find_live_product_fact(
+    live_id: str,
+    question: str,
+    min_score: float = 40.0,
+) -> LiveKnowledgeMatch | None:
+    """재사용 가능한 판매자 확정 답변 1건을 찾는다.
+
+    너무 약한 유사도 결과를 바로 시청자에게 노출하지 않도록
+    기본적으로 강한 일치(score >= 40)만 사용한다.
+    """
+
+    matches = _search_live_knowledge(
+        live_id=live_id,
+        question=question,
+        top_k=1,
+    )
+
+    if not matches:
+        return None
+
+    best = matches[0]
+
+    if best.score < min_score:
+        return None
+
+    return best
 
 # =========================================================
 # 8. MCP Server
@@ -622,7 +673,12 @@ def add_live_product_fact(
             description=
                 "판매자가 직접 제공한 답변"
         )
-    ]
+    ],
+
+    handled_by: str | None = None,
+
+    category: str | None = None,
+
 ) -> AddLiveKnowledgeResult:
 
     live_id = live_id.strip()
@@ -648,7 +704,9 @@ def add_live_product_fact(
         live_id=live_id,
         question=question,
         answer=answer,
-        source="seller"
+        source="seller",
+        handled_by=handled_by,
+        category=category,
     )
 
 
