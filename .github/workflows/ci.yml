@@ -28,10 +28,12 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Build and push Docker image
+        id: push-image
         env:
           ECR_REPOSITORY: fundit-ai-copilot
           IMAGE_TAG: sha-${{ github.sha }}
         run: |
+          set -euo pipefail
           IMAGE="${{ steps.ecr.outputs.registry }}/$ECR_REPOSITORY:$IMAGE_TAG"
 
           echo "Building image: $IMAGE"
@@ -41,6 +43,39 @@ jobs:
             -t "$IMAGE" \
             .
 
-          docker push "$IMAGE"
+          push_log="$RUNNER_TEMP/fundit-ai-copilot-push.log"
+          docker push "$IMAGE" | tee "$push_log"
+          image_digest="$(sed -nE 's/.*digest: (sha256:[0-9a-f]{64}).*/\1/p' "$push_log" | tail -n 1)"
+          if [[ ! "$image_digest" =~ ^sha256:[0-9a-f]{64}$ ]]; then
+            echo '::error::Could not read the pushed image digest.'
+            exit 1
+          fi
+          printf 'image_digest=%s\n' "$image_digest" >> "$GITHUB_OUTPUT"
 
           echo "Pushed image: $IMAGE"
+
+      - name: Dispatch GitOps image update
+        env:
+          GH_TOKEN: ${{ secrets.FUNDIT_GITOPS_TOKEN }}
+          IMAGE_DIGEST: ${{ steps.push-image.outputs.image_digest }}
+          IMAGE_TAG: sha-${{ github.sha }}
+        run: |
+          set -euo pipefail
+          if [[ -z "$GH_TOKEN" ]]; then
+            echo '::error::Missing FUNDIT_GITOPS_TOKEN Actions secret.'
+            exit 1
+          fi
+          if [[ ! "$IMAGE_DIGEST" =~ ^sha256:[0-9a-f]{64}$ ]]; then
+            echo '::error::Missing valid digest from the Docker push step.'
+            exit 1
+          fi
+
+          gh workflow run cd-dispatch-copilot-image.yml \
+            --repo KT-Cloud-Tech-Up-team6/Fundit-GitOps \
+            --ref main \
+            -f image_tag="$IMAGE_TAG" \
+            -f image_digest="$IMAGE_DIGEST" \
+            -f source_sha="$GITHUB_SHA"
+
+          printf 'GitOps image update requested for `%s` (`%s`).\n' \
+            "$IMAGE_TAG" "$IMAGE_DIGEST" >> "$GITHUB_STEP_SUMMARY"
