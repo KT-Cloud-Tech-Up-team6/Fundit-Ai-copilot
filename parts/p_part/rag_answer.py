@@ -1,5 +1,6 @@
 import json
 import os
+import time
 import re
 from typing import Literal
 
@@ -601,7 +602,7 @@ NO_GROUNDED_INFO인 경우:
     # -----------------------------------------
     # 5. Gemini 호출
     #
-    # 질문당 최대 1회
+    # 429 발생 시 최대 3회까지 재시도
     # -----------------------------------------
 
     trace(
@@ -612,37 +613,71 @@ NO_GROUNDED_INFO인 경우:
         retrievedChunkIds=retrieved_chunk_ids,
     )
 
-    try:
-        response = llm.client().models.generate_content(
-            model=MODEL_ID,
-            contents=prompt,
+    max_attempts = 3
 
-            config=types.GenerateContentConfig(
-                # Grounding 안정성을 위해 기존과 동일하게 유지
-                temperature=0,
+    for attempt in range(1, max_attempts + 1):
+        try:
+            response = llm.client().models.generate_content(
+                model=MODEL_ID,
+                contents=prompt,
 
-                response_mime_type=
-                    "application/json",
+                config=types.GenerateContentConfig(
+                    # Grounding 안정성을 위해 기존과 동일하게 유지
+                    temperature=0,
 
-                response_schema=
-                    GroundedAnswer
+                    response_mime_type=
+                        "application/json",
+
+                    response_schema=
+                        GroundedAnswer
+                )
             )
-        )
 
-        trace(
-            "gemini_result",
-            questionHash=question_hash(question),
-            success=True,
-        )
+            trace(
+                "gemini_result",
+                questionHash=question_hash(question),
+                success=True,
+                attempt=attempt,
+            )
 
-    except Exception as exc:
-        trace(
-            "gemini_result",
-            questionHash=question_hash(question),
-            success=False,
-            errorType=type(exc).__name__,
-        )
-        raise
+            break
+
+        except Exception as exc:
+            status_code = (
+                getattr(exc, "code", None)
+                or getattr(exc, "status_code", None)
+            )
+
+            message = str(exc)
+
+            rate_limited = (
+                status_code == 429
+                or "429" in message
+                or "RESOURCE_EXHAUSTED" in message
+            )
+
+            trace(
+                "gemini_result",
+                questionHash=question_hash(question),
+                success=False,
+                attempt=attempt,
+                errorType=type(exc).__name__,
+                rateLimited=rate_limited,
+            )
+
+            if not rate_limited or attempt >= max_attempts:
+                raise
+
+            delay = 0.8 * (2 ** (attempt - 1))
+
+            trace(
+                "gemini_retry",
+                questionHash=question_hash(question),
+                nextAttempt=attempt + 1,
+                delaySec=delay,
+            )
+
+            time.sleep(delay)
 
     # -----------------------------------------
     # 6. JSON 변환
