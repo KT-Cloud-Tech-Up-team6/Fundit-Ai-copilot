@@ -34,6 +34,7 @@ from orchestrator.service import CopilotService
 from parts.o_part.part import OPart
 from parts.p_part.part import PPart
 from shared.schemas import Comment, Decision, LiveContext
+from shared.trace import trace
 
 BASE = "/api/v1/ai"
 RUNTIME_DIR = Path(os.getenv("RUNTIME_DIR", Path(__file__).parent / "runtime"))
@@ -842,6 +843,18 @@ def faq(live_id: str, top_n: int = 10):
     cur = st["last_win"]
     cur_top3 = sorted([e for e in st["faq"].values() if e["windows"].get(cur, 0) > 0],
                       key=lambda e: -e["windows"].get(cur, 0))[:3]
+
+    trace(
+        "faq",
+        liveId=live_id,
+        totalEntries=len(entries),
+        currentWindow=cur,
+        currentWindowTop3=len(cur_top3),
+        promotedCount=sum(
+            1 for e in entries
+            if e.get("promoted")
+        ),
+    )
     by_category: dict[str, list] = {}
     for e in entries:
         by_category.setdefault(
