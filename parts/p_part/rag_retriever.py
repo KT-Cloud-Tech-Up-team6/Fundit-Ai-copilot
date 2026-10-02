@@ -766,6 +766,7 @@ def _generic_retrieve(question, chunks, top_k):
         return out
 
     scored = []
+    weak_scored = []
     for chunk in chunks:
         normalized_text = normalize(chunk["text"])
         normalized_category = normalize(chunk["category"])
@@ -783,24 +784,54 @@ def _generic_retrieve(question, chunks, top_k):
         if question_numbers & set(extract_numbers(chunk["text"])):
             score += 5
 
+        if score > 0:
+            weak_scored.append((score, chunk))
+
         if score >= 6:
             scored.append((score, chunk))
 
-    scored.sort(key=lambda item: item[0], reverse=True)
+    scored.sort(
+        key=lambda item: item[0],
+        reverse=True,
+    )
 
-    selected = [
-        chunk
-        for _, chunk in scored[:top_k]
-    ]
+    weak_scored.sort(
+        key=lambda item: item[0],
+        reverse=True,
+    )
+
+    # 강한 lexical match가 있으면 기존처럼 top-k 사용
+    if scored:
+        selected = [
+            chunk
+            for _, chunk in scored[:top_k]
+        ]
+        strategy = "generic_strong"
+
+    # Live prepare KB처럼 작은 KB는 전체를 Grounding 모델에 전달한다.
+    # Retriever가 표현 차이 때문에 근거를 버리는 false negative를 줄인다.
+    elif len(chunks) <= 12:
+        selected = list(chunks)
+        strategy = "generic_small_kb_fullscan"
+
+    # KB가 큰 경우에는 약한 lexical match만 top-k로 제한한다.
+    else:
+        selected = [
+            chunk
+            for score, chunk in weak_scored[:top_k]
+            if score >= 3
+        ]
+        strategy = "generic_weak"
 
     trace(
         "retrieval",
         questionHash=question_hash(question),
-        strategy="generic",
+        strategy=strategy,
         activeKb=str(active_md_path()),
         totalChunks=len(chunks),
         matchedRules=[],
         candidateCount=len(scored),
+        weakCandidateCount=len(weak_scored),
         selectedChunkIds=[
             chunk["chunk_id"]
             for chunk in selected
