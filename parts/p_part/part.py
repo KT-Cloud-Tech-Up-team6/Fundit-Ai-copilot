@@ -18,6 +18,7 @@ from shared.part_base import CopilotPart
 from shared.schemas import (
     Comment, Decision, LiveContext, PartAnswer, PartManifest, RouteMatch,
 )
+from shared.trace import trace, question_hash
 
 
 class PPart(CopilotPart):
@@ -55,6 +56,19 @@ class PPart(CopilotPart):
             "unresolved_topics": result.get("unresolved_topics", []),
             "needs_seller_attention": result.get("needs_seller_attention", False),
         }
+
+        trace(
+            "grounding",
+            liveId=context.live_id,
+            commentId=comment.comment_id,
+            questionHash=question_hash(comment.text),
+            groundingStatus=status,
+            sourceChunkIds=result.get("source_chunk_ids", []),
+            needsSellerAttention=result.get(
+                "needs_seller_attention",
+                False,
+            ),
+        )
 
         if status == "NO_GROUNDED_INFO":
             return PartAnswer(

@@ -8,6 +8,7 @@ from google.genai import types
 from pydantic import BaseModel
 
 from parts.p_part.rag_retriever import retrieve
+from shared.trace import trace, question_hash
 from parts.p_part.counselor_style_retriever import CounselorStyleRetriever
 
 
@@ -266,6 +267,13 @@ def answer_question(question: str):
     # Product KB 검색 결과 자체가 없는 경우
     # Gemini 호출 없이 종료
     if not chunks:
+
+        trace(
+            "gemini",
+            questionHash=question_hash(question),
+            called=False,
+            reason="NO_RETRIEVAL_RESULT",
+        )
 
         return no_grounded_answer()
 
@@ -596,21 +604,45 @@ NO_GROUNDED_INFO인 경우:
     # 질문당 최대 1회
     # -----------------------------------------
 
-    response = llm.client().models.generate_content(
+    trace(
+        "gemini",
+        questionHash=question_hash(question),
+        called=True,
         model=MODEL_ID,
-        contents=prompt,
-
-        config=types.GenerateContentConfig(
-            # Grounding 안정성을 위해 기존과 동일하게 유지
-            temperature=0,
-
-            response_mime_type=
-                "application/json",
-
-            response_schema=
-                GroundedAnswer
-        )
+        retrievedChunkIds=retrieved_chunk_ids,
     )
+
+    try:
+        response = llm.client().models.generate_content(
+            model=MODEL_ID,
+            contents=prompt,
+
+            config=types.GenerateContentConfig(
+                # Grounding 안정성을 위해 기존과 동일하게 유지
+                temperature=0,
+
+                response_mime_type=
+                    "application/json",
+
+                response_schema=
+                    GroundedAnswer
+            )
+        )
+
+        trace(
+            "gemini_result",
+            questionHash=question_hash(question),
+            success=True,
+        )
+
+    except Exception as exc:
+        trace(
+            "gemini_result",
+            questionHash=question_hash(question),
+            success=False,
+            errorType=type(exc).__name__,
+        )
+        raise
 
     # -----------------------------------------
     # 6. JSON 변환
