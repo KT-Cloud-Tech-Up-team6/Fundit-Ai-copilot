@@ -4,6 +4,7 @@ from __future__ import annotations
 from shared.part_base import CopilotPart
 from shared.schemas import Comment, Decision, LiveContext, PartAnswer, RouteMatch
 from orchestrator.router import Router
+from shared.trace import trace, question_hash
 
 UNANSWERABLE_FALLBACK = (
     "해당 내용은 방송 중 바로 확인이 어려워요. "
@@ -28,6 +29,17 @@ class CopilotService:
     def process(self, live_id: str, comment: Comment) -> PartAnswer:
         match: RouteMatch = self._router.route(comment.text)
 
+        trace(
+            "route",
+            liveId=live_id,
+            commentId=comment.comment_id,
+            questionHash=question_hash(comment.text),
+            decision=getattr(match.decision, "value", match.decision),
+            partId=match.part_id,
+            label=match.label,
+            confidence=match.confidence,
+        )
+
         if match.decision == Decision.IGNORE:
             return PartAnswer(
                 decision=Decision.IGNORE,
@@ -36,6 +48,16 @@ class CopilotService:
             )
 
         if match.decision == Decision.UNANSWERABLE or match.part_id is None:
+            trace(
+                "result",
+                liveId=live_id,
+                commentId=comment.comment_id,
+                questionHash=question_hash(comment.text),
+                decision="UNANSWERABLE",
+                partId=match.part_id,
+                reason="ROUTER_UNANSWERABLE",
+            )
+
             return PartAnswer(
                 decision=Decision.UNANSWERABLE,
                 answer_text=UNANSWERABLE_FALLBACK,
@@ -48,4 +70,25 @@ class CopilotService:
         # 파트가 근거를 못 찾은 경우에도 동일한 폴백 멘트로 통일
         if answer.decision == Decision.UNANSWERABLE and not answer.answer_text:
             answer.answer_text = UNANSWERABLE_FALLBACK
+
+        trace(
+            "result",
+            liveId=live_id,
+            commentId=comment.comment_id,
+            questionHash=question_hash(comment.text),
+            decision=getattr(answer.decision, "value", answer.decision),
+            partId=answer.part_id,
+            grounding=answer.meta.get("grounding"),
+            sourceChunkIds=answer.meta.get("source_chunk_ids", []),
+            needsSellerAttention=answer.meta.get(
+                "needs_seller_attention",
+                False,
+            ),
+            reason=(
+                "NO_GROUNDED_INFO"
+                if answer.meta.get("grounding") == "NO_GROUNDED_INFO"
+                else None
+            ),
+        )
+
         return answer

@@ -1,6 +1,8 @@
 import re
 from pathlib import Path
 
+from shared.trace import trace, question_hash
+
 
 
 # 통합 재배치: KB 는 parts/p_part/data/ (경로만 수정, 파싱 로직 무변경)
@@ -785,7 +787,27 @@ def _generic_retrieve(question, chunks, top_k):
             scored.append((score, chunk))
 
     scored.sort(key=lambda item: item[0], reverse=True)
-    return [chunk for _, chunk in scored[:top_k]]
+
+    selected = [
+        chunk
+        for _, chunk in scored[:top_k]
+    ]
+
+    trace(
+        "retrieval",
+        questionHash=question_hash(question),
+        strategy="generic",
+        activeKb=str(active_md_path()),
+        totalChunks=len(chunks),
+        matchedRules=[],
+        candidateCount=len(scored),
+        selectedChunkIds=[
+            chunk["chunk_id"]
+            for chunk in selected
+        ],
+    )
+
+    return selected
 
 
 # =========================================================
@@ -848,6 +870,18 @@ def retrieve(
 
     spec_tokens = extract_spec_tokens(
         question
+    )
+
+    trace(
+        "retrieval_route",
+        questionHash=question_hash(question),
+        activeKb=str(active_md_path()),
+        totalChunks=len(chunks),
+        matchedRules=[
+            matched["name"]
+            for matched in matched_rules
+        ],
+        specTokenCount=len(spec_tokens),
     )
 
 
@@ -1143,6 +1177,23 @@ def retrieve(
             chunks,
             top_k
         )
+
+    trace(
+        "retrieval",
+        questionHash=question_hash(question),
+        strategy="rule",
+        activeKb=str(active_md_path()),
+        totalChunks=len(chunks),
+        matchedRules=[
+            matched["name"]
+            for matched in matched_rules
+        ],
+        candidateCount=len(scored),
+        selectedChunkIds=[
+            chunk["chunk_id"]
+            for chunk in filtered
+        ],
+    )
 
     return filtered
 
