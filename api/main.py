@@ -914,14 +914,93 @@ def unanswered_detail(live_id: str, qid: str):
     """미답변 질문 클릭 → 상단: 참고 정보(관련 KB·이미지 자리) / 하단: 상담사 말투 답변 초안."""
     e = _find_by_qid(live_id, qid)
 
-    # 참고 정보: 활성 상품 KB 에서 부분 관련 청크 검색 (근거가 아니라 판매자 참고용)
+    # 참고 정보: 활성 상품 KB 에서 부분 관련 청크 검색
+    # ref_chunks: 답변 초안 생성용
+    # display_ref_chunks: 판매자 화면 노출용
     from parts.p_part.rag_retriever import retrieve
+
     try:
-        ref_chunks = [{"chunk_id": c["chunk_id"], "category": c["category"],
-                       "text": c["text"], "source": c.get("source")}
-                      for c in retrieve(e["representative_text"], top_k=3)]
+        ref_chunks = [
+            {
+                "chunk_id": c["chunk_id"],
+                "category": c["category"],
+                "text": c["text"],
+                "source": c.get("source"),
+            }
+            for c in retrieve(e["representative_text"], top_k=3)
+        ]
+
+        question = e["representative_text"].lower()
+
+        intent_groups = [
+            (
+                ("가격", "얼마", "금액", "판매가", "정가"),
+                ("가격", "금액", "판매가", "정가", "원"),
+            ),
+            (
+                ("색상", "컬러", "색깔"),
+                ("색상", "컬러", "색깔", "옵션"),
+            ),
+            (
+                ("옵션", "선택"),
+                ("옵션", "선택"),
+            ),
+            (
+                ("수량", "한정", "재고"),
+                ("수량", "한정", "재고"),
+            ),
+            (
+                ("구성", "패키지", "포함"),
+                ("구성", "패키지", "포함"),
+            ),
+            (
+                ("사양", "스펙", "성능", "크기", "무게", "용량"),
+                ("사양", "스펙", "성능", "크기", "무게", "용량"),
+            ),
+        ]
+
+        scored_refs = []
+
+        for chunk in ref_chunks:
+            haystack = f"{chunk['category']} {chunk['text']}".lower()
+            score = 0
+
+            # 질문 단어와 KB 내용 직접/부분 일치
+            for word in _qwords(question):
+                if word in haystack:
+                    score += 5
+                    continue
+
+                for cut in range(len(word) - 1, 1, -1):
+                    fragment = word[:cut]
+
+                    if len(fragment) >= 2 and fragment in haystack:
+                        score += 3
+                        break
+
+            # 주요 질문 의도 가중치
+            for question_words, evidence_words in intent_groups:
+                if any(word in question for word in question_words):
+                    if any(word in haystack for word in evidence_words):
+                        score += 10
+
+            if score > 0:
+                scored_refs.append((score, chunk))
+
+        scored_refs.sort(
+            key=lambda item: item[0],
+            reverse=True,
+        )
+
+        # 판매자 화면에는 관련도가 높은 정보만 최대 3개 노출
+        display_ref_chunks = [
+            chunk
+            for _, chunk in scored_refs[:3]
+        ]
+
     except Exception:
         ref_chunks = []
+        display_ref_chunks = []
 
     # 답변 초안 (상담사 말투) — 1회 생성 후 캐시. 사실 미확인 부분은 표기.
     if not e["draft"]:
@@ -953,7 +1032,7 @@ def unanswered_detail(live_id: str, qid: str):
     return {"status": "ok", "qid": qid,
             "question": e["representative_text"], "count": e["count"],
             "examples": e["examples"], "topics": e["topics"],
-            "reference": {"chunks": ref_chunks,
+            "reference": {"chunks": display_ref_chunks,
                           "images": []},   # 상품 이미지 URL — BE 연결 자리
             "draft": e["draft"],
             "draft_error": e.get("draft_error"),
